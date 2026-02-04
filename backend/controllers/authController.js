@@ -1,5 +1,5 @@
 const User = require('../models/User');
-
+const jwt = require('jsonwebtoken');
 // LOGIN
 exports.login = async (req, res) => {
   try {
@@ -33,18 +33,36 @@ exports.login = async (req, res) => {
       });
     }
 
-    await User.updateStatus(user.id, 'online');
-    console.log('✅ User logged in, status: online');
+    // ADD DEBUG HERE TOO:
+    console.log('🔑 About to sign token...');
+    console.log('JWT_SECRET at signing time:', process.env.JWT_SECRET ? 'EXISTS' : 'MISSING');
 
-    const updatedUser = await User.findById(user.id);
-    const safeUser = User.getSafeUser(updatedUser);
+    const token = jwt.sign(
+      { 
+        id: user.id,
+        username: user.username,
+        role: user.role 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    console.log('✅ Token created successfully');
+
+    await User.updateStatus(user.id, 'online');
     
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: 'Login successful',
-      user: safeUser
+      token: token,
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        status: 'online',
+        created_at: user.created_at
+      }
     });
-
   } catch (error) {
     console.error('❌ Login error:', error);
     return res.status(500).json({
