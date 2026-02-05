@@ -10,6 +10,7 @@ import {
   BarChart as ChartIcon
 } from '@mui/icons-material';
 import { getUserData, clearAuthData } from '../../utils/auth';
+import { authAPI } from '../../services/api';
 import './style.css';
 
 function Dashboard() {
@@ -18,12 +19,18 @@ function Dashboard() {
 
   const handleLogout = async () => {
     try {
+      // Call logout API
+      if (user?.id) {
+        await authAPI.logout(user.id);
+      }
+
       // Clear local auth data
       clearAuthData();
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
-      // Still navigate even if logout API fails
+      // Still clear local data and navigate even if logout API fails
+      clearAuthData();
       navigate('/login');
     }
   };
