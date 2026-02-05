@@ -13,6 +13,15 @@ function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Clear fields when component mounts (e.g., after logout)
+  useEffect(() => {
+    setUsername('');
+    setPassword('');
+    setError('');
+    setIsLoading(false);
+    setLoginSuccess(false);
+  }, []);
+
   // Konami code easter egg
   useEffect(() => {
     const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
@@ -58,6 +67,10 @@ function Login() {
         console.log('🔍 Verifying localStorage...');
         console.log('Stored token:', localStorage.getItem('token') ? 'YES' : 'NO');
         console.log('Stored user:', localStorage.getItem('user') ? 'YES' : 'NO');
+
+        // Clear input fields
+        setUsername('');
+        setPassword('');
 
         setIsLoading(false);
         setLoginSuccess(true);
@@ -129,13 +142,14 @@ function Login() {
               </div>
             )}
 
-            <form className="login-form" onSubmit={handleSubmit}>
+            <form className="login-form" onSubmit={handleSubmit} autoComplete="off">
               <InputField
                 type="text"
                 id="username"
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                autoComplete="off"
                 required
               />
 
@@ -145,6 +159,7 @@ function Login() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="off"
                 required
               />
 
@@ -188,7 +203,7 @@ const FeatureItem = ({ icon, title, description, delay }) => {
 };
 
 // Input Field Component
-const InputField = ({ type, id, placeholder, value, onChange, required }) => {
+const InputField = ({ type, id, placeholder, value, onChange, required, autoComplete }) => {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
@@ -202,6 +217,7 @@ const InputField = ({ type, id, placeholder, value, onChange, required }) => {
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         required={required}
+        autoComplete={autoComplete || 'off'}
       />
       <span className="input-focus-border"></span>
     </div>
