@@ -3,53 +3,44 @@ const db = require('../config/db');
 class User {
   // Find user by username
   static async findByUsername(username) {
-    return new Promise((resolve, reject) => {
-      db.query(
+    try {
+      const [results] = await db.query(
         'SELECT * FROM users WHERE username = ?',
-        [username],
-        (error, results) => {
-          if (error) {
-            console.error('Error finding user:', error);
-            return reject(error);
-          }
-          resolve(results[0] || null);
-        }
+        [username]
       );
-    });
+      return results[0] || null;
+    } catch (error) {
+      console.error('Error finding user:', error);
+      throw error;
+    }
   }
 
   // Find user by ID
   static async findById(userId) {
-    return new Promise((resolve, reject) => {
-      db.query(
+    try {
+      const [results] = await db.query(
         'SELECT * FROM users WHERE id = ?',
-        [userId],
-        (error, results) => {
-          if (error) {
-            console.error('Error finding user by ID:', error);
-            return reject(error);
-          }
-          resolve(results[0] || null);
-        }
+        [userId]
       );
-    });
+      return results[0] || null;
+    } catch (error) {
+      console.error('Error finding user by ID:', error);
+      throw error;
+    }
   }
 
   // Update user status
   static async updateStatus(userId, status) {
-    return new Promise((resolve, reject) => {
-      db.query(
+    try {
+      const [results] = await db.query(
         'UPDATE users SET status = ? WHERE id = ?',
-        [status, userId],
-        (error, results) => {
-          if (error) {
-            console.error('Error updating status:', error);
-            return reject(error);
-          }
-          resolve(results);
-        }
+        [status, userId]
       );
-    });
+      return results;
+    } catch (error) {
+      console.error('Error updating status:', error);
+      throw error;
+    }
   }
 
   // Verify password

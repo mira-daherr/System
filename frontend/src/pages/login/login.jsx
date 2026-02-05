@@ -1,14 +1,17 @@
-// pages/login/Login.jsx
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './style.css';
+import { authAPI } from '../../services/api';
+import { setAuthToken, setUserData } from '../../utils/auth';
 
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [remember, setRemember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   // Konami code easter egg
   useEffect(() => {
@@ -35,27 +38,44 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
 
-    // Simulate authentication
-    setTimeout(() => {
-      console.log('Login attempt:', {
-        username,
-        password: '***',
-        remember
-      });
+    try {
+      console.log('Login attempt:', { username, password: '***' });
+      
+      const response = await authAPI.login(username, password);
+      
+      if (response.success) {
+        console.log('✅ Login successful, storing auth data...');
+        console.log('Token:', response.token ? 'received' : 'missing');
+        console.log('User:', response.user);
 
+        // Store token and user data
+        setAuthToken(response.token);
+        setUserData(response.user);
+
+        // Verify data was stored
+        console.log('🔍 Verifying localStorage...');
+        console.log('Stored token:', localStorage.getItem('token') ? 'YES' : 'NO');
+        console.log('Stored user:', localStorage.getItem('user') ? 'YES' : 'NO');
+
+        setIsLoading(false);
+        setLoginSuccess(true);
+
+        // Show success message briefly then redirect
+        setTimeout(() => {
+          console.log('🚀 Navigating to dashboard...');
+          navigate('/dashboard', { replace: true });
+        }, 1000);
+      } else {
+        throw new Error(response.message || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.message || 'Login failed. Please try again.');
       setIsLoading(false);
-      setLoginSuccess(true);
-
-      setTimeout(() => {
-        // Redirect to dashboard or reset form
-        alert('Login successful! (This is a demo)');
-        setUsername('');
-        setPassword('');
-        setRemember(false);
-        setLoginSuccess(false);
-      }, 1500);
-    }, 2000);
+      setLoginSuccess(false);
+    }
   };
 
   return (
@@ -93,6 +113,21 @@ function Login() {
             <div className="welcome-text">
               <h2>Welcome Back!</h2>
             </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="error-message" style={{
+                backgroundColor: '#ff4444',
+                color: 'white',
+                padding: '10px',
+                borderRadius: '5px',
+                marginBottom: '20px',
+                textAlign: 'center',
+                fontSize: '14px'
+              }}>
+                {error}
+              </div>
+            )}
 
             <form className="login-form" onSubmit={handleSubmit}>
               <InputField
