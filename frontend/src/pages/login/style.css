@@ -327,6 +327,39 @@
   width: 100%;
 }
 
+/* Password Toggle Button */
+.login-page .password-toggle {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  opacity: 0.6;
+  z-index: 10;
+}
+
+.login-page .password-toggle:hover {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.login-page .password-toggle:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.login-page .input-group input[type="password"],
+.login-page .input-group input[type="text"] {
+  padding-right: 50px; /* Make room for the eye icon */
+}
+
 /* ==========================================
    FORM OPTIONS
    ========================================== */

@@ -205,11 +205,15 @@ const FeatureItem = ({ icon, title, description, delay }) => {
 // Input Field Component
 const InputField = ({ type, id, placeholder, value, onChange, required, autoComplete }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const isPasswordField = type === 'password';
+  const inputType = isPasswordField && showPassword ? 'text' : type;
 
   return (
     <div className={`input-group ${isFocused || value ? 'focused' : ''}`}>
       <input
-        type={type}
+        type={inputType}
         id={id}
         placeholder={placeholder}
         value={value}
@@ -219,6 +223,33 @@ const InputField = ({ type, id, placeholder, value, onChange, required, autoComp
         required={required}
         autoComplete={autoComplete || 'off'}
       />
+      {isPasswordField && (
+        <button
+          type="button"
+          className="password-toggle"
+          onClick={() => setShowPassword(!showPassword)}
+          aria-label={showPassword ? 'Hide password' : 'Show password'}
+          title={showPassword ? 'Hide password' : 'Show password'}
+        >
+          {showPassword ? (
+            <span style={{ position: 'relative', display: 'inline-block' }}>
+              👁️
+              <span style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%) rotate(-45deg)',
+                width: '100%',
+                height: '2px',
+                background: '#FF3333',
+                borderRadius: '2px'
+              }}></span>
+            </span>
+          ) : (
+            '👁️'
+          )}
+        </button>
+      )}
       <span className="input-focus-border"></span>
     </div>
   );
