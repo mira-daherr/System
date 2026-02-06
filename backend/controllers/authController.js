@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+
 // LOGIN
 exports.login = async (req, res) => {
   try {
@@ -33,7 +34,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    // ADD DEBUG HERE TOO:
     console.log('🔑 About to sign token...');
     console.log('JWT_SECRET at signing time:', process.env.JWT_SECRET ? 'EXISTS' : 'MISSING');
 
@@ -120,6 +120,130 @@ exports.logout = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'An error occurred during logout',
+      error: error.message
+    });
+  }
+};
+
+// ============================================
+// NEW: REQUEST RESET CODE
+// ============================================
+exports.requestResetCode = async (req, res) => {
+  try {
+    console.log('📥 Reset code request received');
+    console.log('Body:', req.body);
+
+    const { username } = req.body;
+
+    if (!username) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username is required'
+      });
+    }
+
+    // Check if user exists
+    const user = await User.findByUsername(username);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Username not found'
+      });
+    }
+
+    // Generate 6-digit code
+    const resetCode = User.generateResetCode();
+    console.log('🔑 Generated reset code:', resetCode);
+
+    // Save code to database
+    const saved = await User.saveResetCode(username, resetCode);
+    
+    if (!saved) {
+      throw new Error('Failed to save reset code');
+    }
+
+    console.log('✅ Reset code saved successfully');
+
+    return res.status(200).json({
+      success: true,
+      message: 'Reset code generated successfully',
+      code: resetCode,
+      expiresIn: '15 minutes'
+    });
+
+  } catch (error) {
+    console.error('❌ Request reset code error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'An error occurred while generating reset code',
+      error: error.message
+    });
+  }
+};
+
+// ============================================
+// NEW: RESET PASSWORD WITH CODE
+// ============================================
+exports.resetPassword = async (req, res) => {
+  try {
+    console.log('📥 Reset password request received');
+    console.log('Body:', req.body);
+
+    const { username, code, newPassword } = req.body;
+
+    // Validate inputs
+    if (!username || !code || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username, code, and new password are required'
+      });
+    }
+
+    // Validate password strength
+    if (newPassword.length < 4) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 4 characters long'
+      });
+    }
+
+    console.log('Verifying reset code for username:', username);
+
+    // Verify reset code
+    const user = await User.verifyResetCode(username, code);
+    
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset code'
+      });
+    }
+
+    console.log('✅ Reset code verified for user:', username);
+
+    // Update password
+    const updated = await User.updatePassword(username, newPassword);
+    
+    if (!updated) {
+      throw new Error('Failed to update password');
+    }
+
+    // Clear reset code
+    await User.clearResetCode(username);
+
+    console.log('✅ Password updated successfully for user:', username);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password reset successful. You can now login with your new password.'
+    });
+
+  } catch (error) {
+    console.error('❌ Reset password error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'An error occurred while resetting password',
       error: error.message
     });
   }
