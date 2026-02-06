@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/login/login";
 import Dashboard from "./pages/dashboard/Dashboard";
+import ForgotPassword from "./pages/login/forgetpassword";// ✨ Add this
 import { isAuthenticated } from "./utils/auth";
 import "./App.css";
 
@@ -25,6 +26,7 @@ function App() {
             }
           />
           <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
         </Routes>
       </div>
     </Router>

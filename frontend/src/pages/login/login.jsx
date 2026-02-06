@@ -51,9 +51,9 @@ function Login() {
 
     try {
       console.log('Login attempt:', { username, password: '***' });
-      
+
       const response = await authAPI.login(username, password);
-      
+
       if (response.success) {
         console.log('✅ Login successful, storing auth data...');
         console.log('Token:', response.token ? 'received' : 'missing');
@@ -97,9 +97,9 @@ function Login() {
         {/* LEFT PANEL - BRANDING */}
         <div className="left-panel">
           <div className="logo-section">
-            <img 
-              src="/punisher-logo.jpg" 
-              alt="The Punisher Gaming Lounge" 
+            <img
+              src="/punisher-logo.jpg"
+              alt="The Punisher Gaming Lounge"
               className="brand-logo"
             />
           </div>
@@ -109,7 +109,7 @@ function Login() {
             <p>Join the elite gaming community where legends are made</p>
           </div>
 
-         
+
         </div>
 
         {/* RIGHT PANEL - LOGIN FORM */}
@@ -122,7 +122,7 @@ function Login() {
 
           <div className="login-card">
             <div className="card-glow"></div>
-            
+
             <div className="welcome-text">
               <h2>Welcome Back!</h2>
             </div>
@@ -164,8 +164,17 @@ function Login() {
               />
 
               <div className="form-options">
-                
-                <a href="#" className="forgot-password">Forgot Password?</a>
+
+                <a
+                  href="/forgot-password"
+                  className="forgot-password"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/forgot-password');
+                  }}
+                >
+                  Forgot Password?
+                </a>
               </div>
 
               <button

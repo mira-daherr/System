@@ -27,6 +27,30 @@ export const authAPI = {
       throw error.response?.data || { message: 'Network error occurred' };
     }
   },
+
+  // ✨ NEW: Request reset code
+  requestResetCode: async (username) => {
+    try {
+      const response = await api.post('/auth/request-reset-code', { username });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // ✨ NEW: Reset password with code
+  resetPassword: async (username, code, newPassword) => {
+    try {
+      const response = await api.post('/auth/reset-password', { 
+        username, 
+        code, 
+        newPassword 
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
 };
 
 // Products API calls
