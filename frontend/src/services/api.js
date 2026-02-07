@@ -4,7 +4,7 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: 'http://localhost:5000',
   headers: {
-    'Content-Type': 'application/json',
+
   },
 });
 
@@ -28,7 +28,7 @@ export const authAPI = {
     }
   },
 
-  // ✨ NEW: Request reset code
+  // Request reset code
   requestResetCode: async (username) => {
     try {
       const response = await api.post('/auth/request-reset-code', { username });
@@ -38,13 +38,13 @@ export const authAPI = {
     }
   },
 
-  // ✨ NEW: Reset password with code
+  // Reset password with code
   resetPassword: async (username, code, newPassword) => {
     try {
-      const response = await api.post('/auth/reset-password', { 
-        username, 
-        code, 
-        newPassword 
+      const response = await api.post('/auth/reset-password', {
+        username,
+        code,
+        newPassword
       });
       return response.data;
     } catch (error) {
@@ -55,6 +55,7 @@ export const authAPI = {
 
 // Products API calls
 export const productsAPI = {
+  // GET all products
   getAll: async (token) => {
     try {
       const response = await api.get('/api/products', {
@@ -66,6 +67,7 @@ export const productsAPI = {
     }
   },
 
+  // GET single product by ID
   getById: async (id, token) => {
     try {
       const response = await api.get(`/api/products/${id}`, {
@@ -77,10 +79,12 @@ export const productsAPI = {
     }
   },
 
+  // SEARCH products by name
   search: async (searchTerm, token) => {
     try {
-      const response = await api.get(`/api/products/search?search=${searchTerm}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await api.get(`/api/products/search`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { search: searchTerm }
       });
       return response.data;
     } catch (error) {
@@ -88,10 +92,12 @@ export const productsAPI = {
     }
   },
 
+  // GET products by price range
   getByPriceRange: async (minPrice, maxPrice, token) => {
     try {
-      const response = await api.get(`/api/products/price-range?min=${minPrice}&max=${maxPrice}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await api.get(`/api/products/price-range`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { min: minPrice, max: maxPrice }
       });
       return response.data;
     } catch (error) {
@@ -99,6 +105,7 @@ export const productsAPI = {
     }
   },
 
+  // CREATE new product
   create: async (productData, token) => {
     try {
       const response = await api.post('/api/products', productData, {
@@ -110,6 +117,7 @@ export const productsAPI = {
     }
   },
 
+  // UPDATE product
   update: async (id, productData, token) => {
     try {
       const response = await api.put(`/api/products/${id}`, productData, {
@@ -121,9 +129,22 @@ export const productsAPI = {
     }
   },
 
+  // DELETE product (soft delete)
   delete: async (id, token) => {
     try {
       const response = await api.delete(`/api/products/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // PERMANENT DELETE product
+  permanentDelete: async (id, token) => {
+    try {
+      const response = await api.delete(`/api/products/permanent/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       return response.data;

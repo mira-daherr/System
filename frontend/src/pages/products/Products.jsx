@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
-  Grid,
-  Card,
-  CardContent,
-  CardMedia,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
   Typography,
   Button,
   TextField,
@@ -20,15 +23,20 @@ import {
   InputLabel,
   CircularProgress,
   Alert,
-  Chip
+  Chip,
+  TableSortLabel,
+  Tooltip
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  DeleteForever as DeleteForeverIcon,
   Search as SearchIcon,
   ArrowBack as ArrowBackIcon,
-  FilterList as FilterListIcon
+  FilterList as FilterListIcon,
+  Image as ImageIcon,
+  CloudUpload as CloudUploadIcon
 } from '@mui/icons-material';
 import { productsAPI } from '../../services/api';
 import { getAuthToken, isAuthenticated } from '../../utils/auth';
@@ -37,7 +45,6 @@ import './style.css';
 const Products = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -48,9 +55,17 @@ const Products = () => {
   const [customMinPrice, setCustomMinPrice] = useState('');
   const [customMaxPrice, setCustomMaxPrice] = useState('');
 
+  // Sorting states
+  const [orderBy, setOrderBy] = useState('name');
+  const [order, setOrder] = useState('asc');
+
+  // Debounce timer
+  const [searchDebounce, setSearchDebounce] = useState(null);
+
   // Modal states
   const [openDialog, setOpenDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openPermanentDeleteDialog, setOpenPermanentDeleteDialog] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
 
@@ -58,8 +73,14 @@ const Products = () => {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
-    image: ''
+    imageFile: null
   });
+
+  // Image preview
+  const [imagePreview, setImagePreview] = useState(null);
+
+  // Track image load errors
+  const [imageErrors, setImageErrors] = useState({});
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -69,19 +90,57 @@ const Products = () => {
     fetchProducts();
   }, [navigate]);
 
+  // Debounced search and filter effect
   useEffect(() => {
-    applyFilters();
-  }, [products, searchTerm, priceFilter, customMinPrice, customMaxPrice]);
+    if (searchDebounce) {
+      clearTimeout(searchDebounce);
+    }
+
+    const timeoutId = setTimeout(() => {
+      fetchProducts();
+    }, 500);
+
+    setSearchDebounce(timeoutId);
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [searchTerm, priceFilter, customMinPrice, customMaxPrice]);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
       setError('');
       const token = getAuthToken();
-      const response = await productsAPI.getAll(token);
+      let response;
+
+      // Priority 1: Search by name if search term exists
+      if (searchTerm.trim()) {
+        response = await productsAPI.search(searchTerm.trim(), token);
+      }
+      // Priority 2: Filter by price range
+      else if (priceFilter !== 'all') {
+        let minPrice, maxPrice;
+
+        if (priceFilter === 'custom') {
+          minPrice = parseFloat(customMinPrice) || 0;
+          maxPrice = parseFloat(customMaxPrice) || 999999;
+        } else {
+          [minPrice, maxPrice] = priceFilter.split('-').map(Number);
+        }
+
+        response = await productsAPI.getByPriceRange(minPrice, maxPrice, token);
+      }
+      // Priority 3: Get all products
+      else {
+        response = await productsAPI.getAll(token);
+      }
 
       if (response.success) {
         setProducts(response.data || []);
+        setImageErrors({});
       } else {
         setError(response.message || 'Failed to fetch products');
       }
@@ -93,34 +152,34 @@ const Products = () => {
     }
   };
 
-  const applyFilters = () => {
-    let filtered = [...products];
-
-    // Apply search filter
-    if (searchTerm.trim()) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Apply price filter
-    if (priceFilter !== 'all') {
-      if (priceFilter === 'custom') {
-        const min = parseFloat(customMinPrice) || 0;
-        const max = parseFloat(customMaxPrice) || Infinity;
-        filtered = filtered.filter(product =>
-          product.price >= min && product.price <= max
-        );
-      } else {
-        const [min, max] = priceFilter.split('-').map(Number);
-        filtered = filtered.filter(product =>
-          product.price >= min && product.price <= max
-        );
-      }
-    }
-
-    setFilteredProducts(filtered);
+  const handleSort = (property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
   };
+
+  const sortedProducts = React.useMemo(() => {
+    const comparator = (a, b) => {
+      let aValue = a[orderBy];
+      let bValue = b[orderBy];
+
+      // Handle string comparisons
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (bValue < aValue) {
+        return order === 'asc' ? 1 : -1;
+      }
+      if (bValue > aValue) {
+        return order === 'asc' ? -1 : 1;
+      }
+      return 0;
+    };
+
+    return [...products].sort(comparator);
+  }, [products, order, orderBy]);
 
   const handleOpenDialog = (product = null) => {
     if (product) {
@@ -129,12 +188,14 @@ const Products = () => {
       setFormData({
         name: product.name,
         price: product.price.toString(),
-        image: product.image || ''
+        imageFile: null
       });
+      setImagePreview(product.image);
     } else {
       setEditMode(false);
       setCurrentProduct(null);
-      setFormData({ name: '', price: '', image: '' });
+      setFormData({ name: '', price: '', imageFile: null });
+      setImagePreview(null);
     }
     setOpenDialog(true);
     setError('');
@@ -145,13 +206,40 @@ const Products = () => {
     setOpenDialog(false);
     setEditMode(false);
     setCurrentProduct(null);
-    setFormData({ name: '', price: '', image: '' });
+    setFormData({ name: '', price: '', imageFile: null });
+    setImagePreview(null);
     setError('');
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please select an image file');
+        return;
+      }
+
+      // Check file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Image size must be less than 5MB');
+        return;
+      }
+
+      setFormData(prev => ({ ...prev, imageFile: file }));
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -171,11 +259,15 @@ const Products = () => {
 
     try {
       const token = getAuthToken();
-      const productData = {
-        name: formData.name.trim(),
-        price: parseFloat(formData.price),
-        image: formData.image.trim() || null
-      };
+
+      // Use FormData for file upload
+      const productData = new FormData();
+      productData.append('name', formData.name.trim());
+      productData.append('price', parseFloat(formData.price));
+
+      if (formData.imageFile) {
+        productData.append('image', formData.imageFile);
+      }
 
       let response;
       if (editMode && currentProduct) {
@@ -204,13 +296,20 @@ const Products = () => {
     setSuccess('');
   };
 
+  const handlePermanentDeleteClick = (product) => {
+    setCurrentProduct(product);
+    setOpenPermanentDeleteDialog(true);
+    setError('');
+    setSuccess('');
+  };
+
   const handleDeleteConfirm = async () => {
     try {
       const token = getAuthToken();
       const response = await productsAPI.delete(currentProduct.id, token);
 
       if (response.success) {
-        setSuccess('Product deleted successfully');
+        setSuccess('Product deleted successfully (soft delete)');
         setOpenDeleteDialog(false);
         setCurrentProduct(null);
         fetchProducts();
@@ -223,85 +322,92 @@ const Products = () => {
     }
   };
 
+  const handlePermanentDeleteConfirm = async () => {
+    try {
+      const token = getAuthToken();
+      const response = await productsAPI.permanentDelete(currentProduct.id, token);
+
+      if (response.success) {
+        setSuccess('Product permanently deleted');
+        setOpenPermanentDeleteDialog(false);
+        setCurrentProduct(null);
+        fetchProducts();
+      } else {
+        setError(response.message || 'Failed to permanently delete product');
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to permanently delete product');
+      console.error('Error permanently deleting product:', err);
+    }
+  };
+
   const handleDeleteCancel = () => {
     setOpenDeleteDialog(false);
     setCurrentProduct(null);
   };
 
-  const getDefaultImage = () => {
-    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
+  const handlePermanentDeleteCancel = () => {
+    setOpenPermanentDeleteDialog(false);
+    setCurrentProduct(null);
   };
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setPriceFilter('all');
+    setCustomMinPrice('');
+    setCustomMaxPrice('');
+  };
+
+  const handleImageError = (productId) => {
+    setImageErrors(prev => ({ ...prev, [productId]: true }));
+  };
+
+  const hasActiveFilters = searchTerm || priceFilter !== 'all';
 
   return (
     <Box className="products-container">
       {/* Header */}
       <Box className="products-header">
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <IconButton
-            onClick={() => navigate('/dashboard')}
-            sx={{ color: '#FF3333' }}
-          >
+        <Box className="header-top">
+          <IconButton onClick={() => navigate('/dashboard')} className="back-button">
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h4" sx={{ color: '#fff', fontWeight: 'bold' }}>
+          <Typography variant="h4" className="page-title">
             Products Management
           </Typography>
         </Box>
 
         {/* Search and Filters Bar */}
         <Box className="filters-bar">
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center', flex: 1 }}>
+          <Box className="filters-left">
             {/* Search */}
             <TextField
-              placeholder="Search products..."
+              placeholder="Search products by name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               variant="outlined"
               size="small"
-              sx={{
-                minWidth: '250px',
-                '& .MuiOutlinedInput-root': {
-                  color: '#fff',
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                  '&:hover fieldset': { borderColor: '#FF3333' },
-                  '&.Mui-focused fieldset': { borderColor: '#FF3333' }
-                }
-              }}
+              className="search-field"
               InputProps={{
-                startAdornment: <SearchIcon sx={{ color: '#999', mr: 1 }} />
+                startAdornment: <SearchIcon className="search-icon" />
               }}
             />
 
             {/* Price Filter */}
-            <FormControl
-              size="small"
-              sx={{
-                minWidth: 180,
-                '& .MuiOutlinedInput-root': {
-                  color: '#fff',
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                  '&:hover fieldset': { borderColor: '#FF3333' },
-                  '&.Mui-focused fieldset': { borderColor: '#FF3333' }
-                },
-                '& .MuiInputLabel-root': { color: '#999' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#FF3333' }
-              }}
-            >
+            <FormControl size="small" className="price-filter">
               <InputLabel>Price Range</InputLabel>
               <Select
                 value={priceFilter}
                 onChange={(e) => setPriceFilter(e.target.value)}
                 label="Price Range"
-                startAdornment={<FilterListIcon sx={{ color: '#999', mr: 1 }} />}
+                startAdornment={<FilterListIcon className="filter-icon" />}
               >
                 <MenuItem value="all">All Prices</MenuItem>
-                <MenuItem value="0-10">$0 - $10</MenuItem>
-                <MenuItem value="10-50">$10 - $50</MenuItem>
-                <MenuItem value="50-100">$50 - $100</MenuItem>
-                <MenuItem value="100-500">$100 - $500</MenuItem>
-                <MenuItem value="500-99999">$500+</MenuItem>
+                <MenuItem value="0-10">L.L 0 - L.L 10</MenuItem>
+                <MenuItem value="10-50">L.L 10 - L.L 50</MenuItem>
+                <MenuItem value="50-100">L.L 50 - L.L 100</MenuItem>
+                <MenuItem value="100-500">L.L 100 - L.L 500</MenuItem>
+                <MenuItem value="500-99999">L.L 500+</MenuItem>
                 <MenuItem value="custom">Custom Range</MenuItem>
               </Select>
             </FormControl>
@@ -315,46 +421,36 @@ const Products = () => {
                   value={customMinPrice}
                   onChange={(e) => setCustomMinPrice(e.target.value)}
                   size="small"
-                  sx={{
-                    width: '100px',
-                    '& .MuiOutlinedInput-root': {
-                      color: '#fff',
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                      '&:hover fieldset': { borderColor: '#FF3333' },
-                      '&.Mui-focused fieldset': { borderColor: '#FF3333' }
-                    }
-                  }}
+                  className="price-input"
                 />
-                <Typography sx={{ color: '#999' }}>to</Typography>
+                <Typography className="price-separator">to</Typography>
                 <TextField
                   placeholder="Max"
                   type="number"
                   value={customMaxPrice}
                   onChange={(e) => setCustomMaxPrice(e.target.value)}
                   size="small"
-                  sx={{
-                    width: '100px',
-                    '& .MuiOutlinedInput-root': {
-                      color: '#fff',
-                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                      '&:hover fieldset': { borderColor: '#FF3333' },
-                      '&.Mui-focused fieldset': { borderColor: '#FF3333' }
-                    }
-                  }}
+                  className="price-input"
                 />
               </>
             )}
 
             <Chip
-              label={`${filteredProducts.length} products`}
-              sx={{
-                backgroundColor: 'rgba(255, 51, 51, 0.2)',
-                color: '#FF3333',
-                fontWeight: 'bold'
-              }}
+              label={`${products.length} product${products.length !== 1 ? 's' : ''}`}
+              className="product-count-chip"
             />
+
+            {/* Clear Filters Button */}
+            {hasActiveFilters && (
+              <Button
+                variant="text"
+                size="small"
+                onClick={handleClearFilters}
+                className="clear-filters-btn"
+              >
+                Clear Filters
+              </Button>
+            )}
           </Box>
 
           {/* Add Product Button */}
@@ -362,13 +458,7 @@ const Products = () => {
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => handleOpenDialog()}
-            sx={{
-              backgroundColor: '#FF3333',
-              color: '#fff',
-              textTransform: 'none',
-              fontWeight: 'bold',
-              '&:hover': { backgroundColor: '#cc0000' }
-            }}
+            className="add-product-btn"
           >
             Add Product
           </Button>
@@ -377,123 +467,138 @@ const Products = () => {
 
       {/* Messages */}
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+        <Alert severity="error" className="alert-message" onClose={() => setError('')}>
           {error}
         </Alert>
       )}
       {success && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>
+        <Alert severity="success" className="alert-message" onClose={() => setSuccess('')}>
           {success}
         </Alert>
       )}
 
-      {/* Products Grid */}
+      {/* Products Table */}
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-          <CircularProgress sx={{ color: '#FF3333' }} />
+        <Box className="loading-container">
+          <CircularProgress className="loading-spinner" />
         </Box>
-      ) : filteredProducts.length === 0 ? (
+      ) : products.length === 0 ? (
         <Box className="empty-state">
-          <Typography variant="h6" sx={{ color: '#999' }}>
-            {searchTerm || priceFilter !== 'all' ? 'No products match your filters' : 'No products found'}
+          <Typography variant="h6" className="empty-message">
+            {hasActiveFilters ? 'No products match your filters' : 'No products found'}
           </Typography>
-          {!searchTerm && priceFilter === 'all' && (
+          {!hasActiveFilters && (
             <Button
               variant="outlined"
               startIcon={<AddIcon />}
               onClick={() => handleOpenDialog()}
-              sx={{
-                mt: 2,
-                borderColor: '#FF3333',
-                color: '#FF3333',
-                '&:hover': { borderColor: '#cc0000', backgroundColor: 'rgba(255, 51, 51, 0.1)' }
-              }}
+              className="empty-add-btn"
             >
               Add Your First Product
             </Button>
           )}
+          {hasActiveFilters && (
+            <Button
+              variant="outlined"
+              onClick={handleClearFilters}
+              className="empty-clear-btn"
+            >
+              Clear Filters
+            </Button>
+          )}
         </Box>
       ) : (
-        <Grid container spacing={3}>
-          {filteredProducts.map((product) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
-              <Card className="product-card">
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={product.image || getDefaultImage()}
-                  alt={product.name}
-                  sx={{ objectFit: 'cover', backgroundColor: '#333' }}
-                  onError={(e) => { e.target.src = getDefaultImage(); }}
-                />
-                <CardContent>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: '#fff',
-                      fontWeight: 'bold',
-                      mb: 1,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}
+        <TableContainer component={Paper} className="table-container">
+          <Table>
+            <TableHead>
+              <TableRow className="table-header-row">
+                <TableCell className="table-header-cell image-cell">
+                  Image
+                </TableCell>
+                <TableCell className="table-header-cell">
+                  <TableSortLabel
+                    active={orderBy === 'name'}
+                    direction={orderBy === 'name' ? order : 'asc'}
+                    onClick={() => handleSort('name')}
+                    className="sort-label"
                   >
+                    Product Name
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell className="table-header-cell">
+                  <TableSortLabel
+                    active={orderBy === 'price'}
+                    direction={orderBy === 'price' ? order : 'asc'}
+                    onClick={() => handleSort('price')}
+                    className="sort-label"
+                  >
+                    Price
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell className="table-header-cell actions-cell">
+                  Actions
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sortedProducts.map((product) => (
+                <TableRow key={product.id} className="table-row">
+                  <TableCell>
+                    <Box className="product-image-box">
+                      {product.image && !imageErrors[product.id] ? (
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="product-image"
+                          onError={() => handleImageError(product.id)}
+                        />
+                      ) : (
+                        <ImageIcon className="product-image-placeholder" />
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell className="product-name">
                     {product.name}
-                  </Typography>
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      color: '#FF3333',
-                      fontWeight: 'bold',
-                      mb: 2
-                    }}
-                  >
-                    ${parseFloat(product.price).toFixed(2)}
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<EditIcon />}
-                      onClick={() => handleOpenDialog(product)}
-                      sx={{
-                        flex: 1,
-                        borderColor: '#FF3333',
-                        color: '#FF3333',
-                        textTransform: 'none',
-                        '&:hover': {
-                          borderColor: '#cc0000',
-                          backgroundColor: 'rgba(255, 51, 51, 0.1)'
-                        }
-                      }}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<DeleteIcon />}
-                      onClick={() => handleDeleteClick(product)}
-                      sx={{
-                        flex: 1,
-                        borderColor: '#999',
-                        color: '#999',
-                        textTransform: 'none',
-                        '&:hover': {
-                          borderColor: '#FF3333',
-                          color: '#FF3333',
-                          backgroundColor: 'rgba(255, 51, 51, 0.1)'
-                        }
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+                  </TableCell>
+                  <TableCell className="product-price">
+                    L.L {parseFloat(product.price).toFixed(2)}
+                  </TableCell>
+                  <TableCell>
+                    <Box className="action-buttons">
+                      <Tooltip title="Edit Product">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleOpenDialog(product)}
+                          className="edit-btn"
+                        >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Soft Delete">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteClick(product)}
+                          className="delete-btn"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Permanent Delete">
+                        <IconButton
+                          size="small"
+                          onClick={() => handlePermanentDeleteClick(product)}
+                          className="permanent-delete-btn"
+                        >
+                          <DeleteForeverIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
 
       {/* Add/Edit Product Dialog */}
@@ -502,15 +607,13 @@ const Products = () => {
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          className: 'product-dialog'
-        }}
+        PaperProps={{ className: 'dialog-paper' }}
       >
-        <DialogTitle sx={{ color: '#fff', fontWeight: 'bold' }}>
+        <DialogTitle className="dialog-title">
           {editMode ? 'Edit Product' : 'Add New Product'}
         </DialogTitle>
         <form onSubmit={handleSubmit}>
-          <DialogContent>
+          <DialogContent className="dialog-content">
             <TextField
               autoFocus
               margin="dense"
@@ -521,120 +624,126 @@ const Products = () => {
               required
               value={formData.name}
               onChange={handleInputChange}
-              sx={{
-                mb: 2,
-                '& .MuiOutlinedInput-root': {
-                  color: '#fff',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                  '&:hover fieldset': { borderColor: '#FF3333' },
-                  '&.Mui-focused fieldset': { borderColor: '#FF3333' }
-                },
-                '& .MuiInputLabel-root': { color: '#999' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#FF3333' }
-              }}
+              className="form-field"
             />
             <TextField
               margin="dense"
               name="price"
-              label="Price"
+              label="Price (L.L)"
               type="number"
               fullWidth
               required
               value={formData.price}
               onChange={handleInputChange}
               inputProps={{ step: '0.01', min: '0' }}
-              sx={{
-                mb: 2,
-                '& .MuiOutlinedInput-root': {
-                  color: '#fff',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                  '&:hover fieldset': { borderColor: '#FF3333' },
-                  '&.Mui-focused fieldset': { borderColor: '#FF3333' }
-                },
-                '& .MuiInputLabel-root': { color: '#999' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#FF3333' }
-              }}
+              className="form-field"
             />
-            <TextField
-              margin="dense"
-              name="image"
-              label="Image URL (optional)"
-              type="url"
-              fullWidth
-              value={formData.image}
-              onChange={handleInputChange}
-              placeholder="https://example.com/image.jpg"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  color: '#fff',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.2)' },
-                  '&:hover fieldset': { borderColor: '#FF3333' },
-                  '&.Mui-focused fieldset': { borderColor: '#FF3333' }
-                },
-                '& .MuiInputLabel-root': { color: '#999' },
-                '& .MuiInputLabel-root.Mui-focused': { color: '#FF3333' }
-              }}
-            />
+
+            {/* Upload Image Section */}
+            <Box sx={{ mt: 2, mb: 2 }}>
+              <Button
+                variant="outlined"
+                component="label"
+                startIcon={<CloudUploadIcon />}
+                fullWidth
+                sx={{
+                  borderColor: '#FF3333',
+                  color: '#FF3333',
+                  '&:hover': {
+                    borderColor: '#cc0000',
+                    backgroundColor: 'rgba(255, 51, 51, 0.1)'
+                  }
+                }}
+              >
+                {formData.imageFile ? 'Change Image' : 'Upload Image'}
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+              </Button>
+
+              {/* Image Preview */}
+              {imagePreview && (
+                <Box sx={{ mt: 2, textAlign: 'center' }}>
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '200px',
+                      borderRadius: '8px',
+                      border: '2px solid #FF3333'
+                    }}
+                  />
+                  {formData.imageFile && (
+                    <Typography variant="caption" sx={{ display: 'block', mt: 1, color: '#999' }}>
+                      {formData.imageFile.name}
+                    </Typography>
+                  )}
+                </Box>
+              )}
+            </Box>
           </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button
-              onClick={handleCloseDialog}
-              sx={{ color: '#999', textTransform: 'none' }}
-            >
+          <DialogActions className="dialog-actions">
+            <Button onClick={handleCloseDialog} className="cancel-btn">
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{
-                backgroundColor: '#FF3333',
-                color: '#fff',
-                textTransform: 'none',
-                fontWeight: 'bold',
-                '&:hover': { backgroundColor: '#cc0000' }
-              }}
-            >
+            <Button type="submit" variant="contained" className="submit-btn">
               {editMode ? 'Update' : 'Add'} Product
             </Button>
           </DialogActions>
         </form>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Soft Delete Confirmation Dialog */}
       <Dialog
         open={openDeleteDialog}
         onClose={handleDeleteCancel}
-        PaperProps={{
-          className: 'product-dialog'
-        }}
+        PaperProps={{ className: 'dialog-paper' }}
       >
-        <DialogTitle sx={{ color: '#fff', fontWeight: 'bold' }}>
-          Confirm Delete
+        <DialogTitle className="dialog-title">
+          Confirm Soft Delete
         </DialogTitle>
         <DialogContent>
-          <Typography sx={{ color: '#999' }}>
-            Are you sure you want to delete "{currentProduct?.name}"? This action cannot be undone.
+          <Typography className="dialog-message">
+            Are you sure you want to delete "{currentProduct?.name}"? This is a soft delete and can potentially be recovered.
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button
-            onClick={handleDeleteCancel}
-            sx={{ color: '#999', textTransform: 'none' }}
-          >
+        <DialogActions className="dialog-actions">
+          <Button onClick={handleDeleteCancel} className="cancel-btn">
             Cancel
           </Button>
-          <Button
-            onClick={handleDeleteConfirm}
-            variant="contained"
-            sx={{
-              backgroundColor: '#FF3333',
-              color: '#fff',
-              textTransform: 'none',
-              fontWeight: 'bold',
-              '&:hover': { backgroundColor: '#cc0000' }
-            }}
-          >
+          <Button onClick={handleDeleteConfirm} variant="contained" className="delete-confirm-btn">
             Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Permanent Delete Confirmation Dialog */}
+      <Dialog
+        open={openPermanentDeleteDialog}
+        onClose={handlePermanentDeleteCancel}
+        PaperProps={{ className: 'dialog-paper' }}
+      >
+        <DialogTitle className="dialog-title danger-title">
+          ⚠️ Confirm Permanent Delete
+        </DialogTitle>
+        <DialogContent>
+          <Typography className="dialog-message">
+            Are you sure you want to <strong>permanently delete</strong> "{currentProduct?.name}"?
+          </Typography>
+          <Typography className="danger-message">
+            This action is <strong>IRREVERSIBLE</strong> and the product will be completely removed from the database.
+          </Typography>
+        </DialogContent>
+        <DialogActions className="dialog-actions">
+          <Button onClick={handlePermanentDeleteCancel} className="cancel-btn">
+            Cancel
+          </Button>
+          <Button onClick={handlePermanentDeleteConfirm} variant="contained" className="permanent-delete-confirm-btn">
+            Permanent Delete
           </Button>
         </DialogActions>
       </Dialog>

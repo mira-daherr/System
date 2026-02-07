@@ -1,114 +1,466 @@
+/* Products Container */
 .products-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
   padding: 24px;
+  min-height: 100vh;
+  background-color: #0a0a0a;
 }
 
+/* Header Styles */
 .products-header {
   margin-bottom: 24px;
 }
 
-.filters-bar {
+.header-top {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 16px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 16px;
+}
+
+.back-button {
+  color: #FF3333 !important;
+}
+
+.page-title {
+  color: #fff !important;
+  font-weight: bold !important;
+}
+
+/* Filters Bar */
+.filters-bar {
+  display: flex;
+  gap: 16px;
   flex-wrap: wrap;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 16px;
+  border-radius: 8px;
 }
 
-.product-card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  height: 100%;
+.filters-left {
   display: flex;
-  flex-direction: column;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  flex: 1;
 }
 
-.product-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 40px rgba(255, 51, 51, 0.3);
-  border-color: rgba(255, 51, 51, 0.5);
+/* Search Field */
+.search-field {
+  min-width: 250px;
 }
 
-.product-dialog {
-  background: rgba(26, 26, 26, 0.98);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+.search-field .MuiOutlinedInput-root {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
+.search-field .MuiOutlinedInput-root fieldset {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.search-field .MuiOutlinedInput-root:hover fieldset {
+  border-color: #FF3333;
+}
+
+.search-field .MuiOutlinedInput-root.Mui-focused fieldset {
+  border-color: #FF3333;
+}
+
+.search-icon {
+  color: #999;
+  margin-right: 8px;
+}
+
+/* Price Filter */
+.price-filter {
+  min-width: 180px;
+}
+
+.price-filter .MuiOutlinedInput-root {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.price-filter .MuiOutlinedInput-root fieldset {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.price-filter .MuiOutlinedInput-root:hover fieldset {
+  border-color: #FF3333;
+}
+
+.price-filter .MuiOutlinedInput-root.Mui-focused fieldset {
+  border-color: #FF3333;
+}
+
+.price-filter .MuiInputLabel-root {
+  color: #999;
+}
+
+.price-filter .MuiInputLabel-root.Mui-focused {
+  color: #FF3333;
+}
+
+.filter-icon {
+  color: #999;
+  margin-right: 8px;
+}
+
+/* Price Input Fields */
+.price-input {
+  width: 100px;
+}
+
+.price-input .MuiOutlinedInput-root {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.price-input .MuiOutlinedInput-root fieldset {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.price-input .MuiOutlinedInput-root:hover fieldset {
+  border-color: #FF3333;
+}
+
+.price-input .MuiOutlinedInput-root.Mui-focused fieldset {
+  border-color: #FF3333;
+}
+
+.price-separator {
+  color: #999;
+}
+
+/* Product Count Chip */
+.product-count-chip {
+  background-color: rgba(255, 51, 51, 0.2) !important;
+  color: #FF3333 !important;
+  font-weight: bold !important;
+}
+
+/* Clear Filters Button */
+.clear-filters-btn {
+  color: #999 !important;
+  text-transform: none !important;
+}
+
+.clear-filters-btn:hover {
+  color: #FF3333 !important;
+  background-color: rgba(255, 51, 51, 0.1) !important;
+}
+
+/* Add Product Button */
+.add-product-btn {
+  background-color: #FF3333 !important;
+  color: #fff !important;
+  text-transform: none !important;
+  font-weight: bold !important;
+}
+
+.add-product-btn:hover {
+  background-color: #cc0000 !important;
+}
+
+/* Alert Messages */
+.alert-message {
+  margin-bottom: 16px;
+}
+
+/* Loading Container */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.loading-spinner {
+  color: #FF3333 !important;
+}
+
+/* Empty State */
 .empty-state {
+  text-align: center;
+  padding: 64px 16px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.empty-message {
+  color: #999 !important;
+  margin-bottom: 16px !important;
+}
+
+.empty-add-btn {
+  border-color: #FF3333 !important;
+  color: #FF3333 !important;
+}
+
+.empty-add-btn:hover {
+  border-color: #cc0000 !important;
+  background-color: rgba(255, 51, 51, 0.1) !important;
+}
+
+.empty-clear-btn {
+  border-color: #999 !important;
+  color: #999 !important;
+}
+
+.empty-clear-btn:hover {
+  border-color: #FF3333 !important;
+  color: #FF3333 !important;
+  background-color: rgba(255, 51, 51, 0.1) !important;
+}
+
+/* Table Container */
+.table-container {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.table-container .MuiTableCell-root {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Table Header */
+.table-header-row {
+  background-color: rgba(255, 51, 51, 0.1) !important;
+}
+
+.table-header-cell {
+  color: #fff !important;
+  font-weight: bold !important;
+}
+
+.image-cell {
+  width: 80px;
+}
+
+.actions-cell {
+  text-align: center !important;
+}
+
+/* Sort Label */
+.sort-label {
+  color: #fff !important;
+}
+
+.sort-label:hover {
+  color: #FF3333 !important;
+}
+
+.sort-label.Mui-active {
+  color: #FF3333 !important;
+}
+
+.sort-label .MuiTableSortLabel-icon {
+  color: #FF3333 !important;
+}
+
+/* Table Row */
+.table-row:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Product Image */
+.product-image-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+  background-color: #333;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  border: 2px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 48px;
+  overflow: hidden;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.product-card {
-  animation: fadeIn 0.3s ease;
+.product-image-placeholder {
+  color: #666;
+  font-size: 28px;
 }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Product Info */
+.product-name {
+  color: #fff !important;
 }
 
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+.product-price {
+  color: #FF3333 !important;
+  font-weight: bold !important;
+  font-size: 1.1rem !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 51, 51, 0.5);
-  border-radius: 4px;
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 51, 51, 0.8);
+.edit-btn {
+  color: #FF3333 !important;
 }
 
-/* Responsive adjustments */
+.edit-btn:hover {
+  background-color: rgba(255, 51, 51, 0.1) !important;
+}
+
+.delete-btn {
+  color: #999 !important;
+}
+
+.delete-btn:hover {
+  background-color: rgba(255, 51, 51, 0.1) !important;
+  color: #FF3333 !important;
+}
+
+.permanent-delete-btn {
+  color: #666 !important;
+}
+
+.permanent-delete-btn:hover {
+  background-color: rgba(255, 0, 0, 0.2) !important;
+  color: #ff0000 !important;
+}
+
+/* Dialog Styles */
+.dialog-paper {
+  background-color: #1a1a1a !important;
+  background-image: none !important;
+}
+
+.dialog-title {
+  color: #fff !important;
+  font-weight: bold !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.danger-title {
+  color: #ff0000 !important;
+}
+
+.dialog-content {
+  padding-top: 24px !important;
+}
+
+.dialog-message {
+  color: #999 !important;
+}
+
+.danger-message {
+  color: #ff6666 !important;
+  margin-top: 16px !important;
+}
+
+/* Form Fields */
+.form-field {
+  margin-bottom: 16px !important;
+}
+
+.form-field .MuiOutlinedInput-root {
+  color: #fff;
+}
+
+.form-field .MuiOutlinedInput-root fieldset {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.form-field .MuiOutlinedInput-root:hover fieldset {
+  border-color: #FF3333;
+}
+
+.form-field .MuiOutlinedInput-root.Mui-focused fieldset {
+  border-color: #FF3333;
+}
+
+.form-field .MuiInputLabel-root {
+  color: #999;
+}
+
+.form-field .MuiInputLabel-root.Mui-focused {
+  color: #FF3333;
+}
+
+/* Dialog Actions */
+.dialog-actions {
+  padding: 16px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.cancel-btn {
+  color: #999 !important;
+  text-transform: none !important;
+}
+
+.submit-btn {
+  background-color: #FF3333 !important;
+  color: #fff !important;
+  text-transform: none !important;
+  font-weight: bold !important;
+}
+
+.submit-btn:hover {
+  background-color: #cc0000 !important;
+}
+
+.delete-confirm-btn {
+  background-color: #FF3333 !important;
+  color: #fff !important;
+  text-transform: none !important;
+  font-weight: bold !important;
+}
+
+.delete-confirm-btn:hover {
+  background-color: #cc0000 !important;
+}
+
+.permanent-delete-confirm-btn {
+  background-color: #ff0000 !important;
+  color: #fff !important;
+  text-transform: none !important;
+  font-weight: bold !important;
+}
+
+.permanent-delete-confirm-btn:hover {
+  background-color: #cc0000 !important;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .products-container {
-    padding: 16px;
-  }
-
   .filters-bar {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .filters-bar > div {
+  .filters-left {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-field,
+  .price-filter {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .add-product-btn {
     width: 100%;
   }
 
-  .filters-bar button {
-    width: 100%;
+  .product-image-box {
+    width: 40px;
+    height: 40px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
   }
 }

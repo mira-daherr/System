@@ -3,7 +3,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-
+const path = require('path');
 
 const app = express();
 const authRoutes = require('./routes/authRoutes');
@@ -24,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 // ============ Routes ============
 // Connect auth routes to app
 // Any request starting with /auth goes to authRoutes
+app.use('/products', express.static(path.join(__dirname, 'public', 'products')));
 app.use('/auth', authRoutes);
 
 // Connect product routes to app - PROTECTED BY AUTHENTICATION
@@ -32,7 +33,7 @@ app.use('/api/products', productRoutes); // ← ADD THIS
 
 // Root route for testing (GET /)
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'API is running successfully!',
     endpoints: {
       auth: {
