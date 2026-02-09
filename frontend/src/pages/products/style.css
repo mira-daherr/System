@@ -431,6 +431,14 @@
 .permanent-delete-confirm-btn:hover {
   background-color: #cc0000 !important;
 }
+/* Restore button styling */
+.restore-btn {
+  color: #4caf50 !important;
+}
+
+.restore-btn:hover {
+  background-color: rgba(76, 175, 80, 0.1) !important;
+}
 
 /* Responsive Design */
 @media (max-width: 768px) {

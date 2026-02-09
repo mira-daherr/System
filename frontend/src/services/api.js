@@ -151,7 +151,32 @@ export const productsAPI = {
     } catch (error) {
       throw error.response?.data || { message: 'Network error occurred' };
     }
+  },
+
+  // RESTORE soft-deleted product
+ // RESTORE soft-deleted product
+restore: async (id, token) => {
+  try {
+    console.log('📡 Calling restore API:');
+    console.log('   - Product ID:', id);
+    console.log('   - URL:', `/api/products/${id}/restore`);
+    console.log('   - Token:', token ? 'exists' : 'missing');
+    
+    const response = await api.put(`/api/products/${id}/restore`, {}, {
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('✅ API Response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('❌ API Error:', error.response?.data || error.message);
+    console.error('Status:', error.response?.status);
+    throw error.response?.data || { message: 'Network error occurred' };
   }
+}
 };
 
 export default api;

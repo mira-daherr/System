@@ -16,9 +16,14 @@ const deleteImageFile = (imagePath) => {
 };
 
 // GET all products
+// GET all products
 exports.getAllProducts = async (req, res) => {
   try {
+    console.log('🔵 getAllProducts called');
     const products = await Product.findAll();
+    console.log('📦 Products returned:', products.length);
+    console.log('📊 Active products:', products.filter(p => p.is_active === 1).length);
+    console.log('📊 Deleted products:', products.filter(p => p.is_active === 0).length);
 
     res.status(200).json({
       success: true,
@@ -93,7 +98,7 @@ exports.createProduct = async (req, res) => {
       });
     }
 
-    // 👇 إذا في ملف منرفع، احفظ الـ URL
+    // If file uploaded, save the URL
     let imageUrl = null;
     if (req.file) {
       imageUrl = `http://localhost:5000/products/${req.file.filename}`;
@@ -165,12 +170,12 @@ exports.updateProduct = async (req, res) => {
     // Get current product to check for old image
     const currentProduct = await Product.findById(id);
 
-    // 👇 إذا في صورة جديدة، احذف القديمة
+    // If new image, delete old one
     if (req.file && currentProduct.image) {
       deleteImageFile(currentProduct.image);
     }
 
-    // 👇 حضر الـ URL للصورة الجديدة
+    // Prepare URL for new image
     let imageUrl = currentProduct.image; // Keep old image by default
     if (req.file) {
       imageUrl = `http://localhost:5000/products/${req.file.filename}`;
@@ -246,6 +251,41 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
+// RESTORE soft-deleted product
+exports.restoreProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    console.log('🔄 Restore request received for product ID:', id);
+    
+    const productExists = await Product.exists(id);
+    console.log('📦 Product exists?', productExists);
+
+    if (!productExists) {
+      console.log('❌ Product not found');
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    const result = await Product.restore(id);
+    console.log('✅ Restore completed. Affected rows:', result);
+
+    res.status(200).json({
+      success: true,
+      message: 'Product restored successfully'
+    });
+  } catch (error) {
+    console.error('❌ Error restoring product:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error restoring product',
+      error: error.message
+    });
+  }
+};
+
 // PERMANENT DELETE product (hard delete)
 exports.permanentDeleteProduct = async (req, res) => {
   try {
@@ -264,7 +304,7 @@ exports.permanentDeleteProduct = async (req, res) => {
     // Get product to delete its image
     const product = await Product.findById(id);
 
-    // 👇 احذف الصورة من السيرفر
+    // Delete image from server
     if (product && product.image) {
       deleteImageFile(product.image);
     }

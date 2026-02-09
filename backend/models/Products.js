@@ -1,23 +1,24 @@
 const db = require('../config/db');
 
 class Product {
-  // Find all products
+  // Find all products (INCLUDING DELETED)
   static async findAll() {
     try {
       const [products] = await db.query(
-        'SELECT * FROM products WHERE is_active = 1 ORDER BY id'
+        'SELECT * FROM products ORDER BY is_active DESC, id ASC'
       );
+      console.log('📦 All products fetched:', products.length, 'products');
       return products;
     } catch (error) {
       throw error;
     }
   }
 
-  // Find product by ID
+  // Find product by ID (INCLUDING DELETED)
   static async findById(id) {
     try {
       const [product] = await db.query(
-        'SELECT * FROM products WHERE id = ? AND is_active = 1',
+        'SELECT * FROM products WHERE id = ?',
         [id]
       );
       return product[0];
@@ -45,7 +46,6 @@ class Product {
     try {
       const { name, price, image, is_active } = productData;
       
-      // Build update query dynamically
       const updates = [];
       const values = [];
       
@@ -89,8 +89,28 @@ class Product {
         'UPDATE products SET is_active = 0, updated_at = NOW() WHERE id = ?',
         [id]
       );
+      console.log('🗑️ Soft deleted product ID:', id, '- Affected rows:', result.affectedRows);
       return result.affectedRows;
     } catch (error) {
+      throw error;
+    }
+  }
+
+  // Restore soft-deleted product
+  static async restore(id) {
+    try {
+      console.log('🔄 Restoring product ID:', id);
+      
+      const [result] = await db.query(
+        'UPDATE products SET is_active = 1, updated_at = NOW() WHERE id = ?',
+        [id]
+      );
+      
+      console.log('✅ Product restored - Affected rows:', result.affectedRows);
+      
+      return result.affectedRows;
+    } catch (error) {
+      console.error('❌ Database error in restore:', error);
       throw error;
     }
   }
@@ -121,11 +141,11 @@ class Product {
     }
   }
 
-  // Find products by name (search)
+  // Find products by name (INCLUDING DELETED)
   static async searchByName(searchTerm) {
     try {
       const [products] = await db.query(
-        'SELECT * FROM products WHERE name LIKE ? AND is_active = 1',
+        'SELECT * FROM products WHERE name LIKE ? ORDER BY is_active DESC, id ASC',
         [`%${searchTerm}%`]
       );
       return products;
@@ -134,11 +154,11 @@ class Product {
     }
   }
 
-  // Find products by price range
+  // Find products by price range (INCLUDING DELETED)
   static async findByPriceRange(minPrice, maxPrice) {
     try {
       const [products] = await db.query(
-        'SELECT * FROM products WHERE price BETWEEN ? AND ? AND is_active = 1',
+        'SELECT * FROM products WHERE price BETWEEN ? AND ? ORDER BY is_active DESC, id ASC',
         [minPrice, maxPrice]
       );
       return products;

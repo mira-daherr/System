@@ -32,6 +32,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   DeleteForever as DeleteForeverIcon,
+  RestoreFromTrash as RestoreFromTrashIcon,
   Search as SearchIcon,
   ArrowBack as ArrowBackIcon,
   FilterList as FilterListIcon,
@@ -66,6 +67,7 @@ const Products = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openPermanentDeleteDialog, setOpenPermanentDeleteDialog] = useState(false);
+  const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
 
@@ -303,6 +305,13 @@ const Products = () => {
     setSuccess('');
   };
 
+  const handleRestoreClick = (product) => {
+    setCurrentProduct(product);
+    setOpenRestoreDialog(true);
+    setError('');
+    setSuccess('');
+  };
+
   const handleDeleteConfirm = async () => {
     try {
       const token = getAuthToken();
@@ -341,6 +350,31 @@ const Products = () => {
     }
   };
 
+  const handleRestoreConfirm = async () => {
+    try {
+      console.log('🔄 Starting restore for product:', currentProduct);
+      
+      const token = getAuthToken();
+      console.log('🔑 Token:', token ? 'exists' : 'missing');
+      
+      const response = await productsAPI.restore(currentProduct.id, token);
+      console.log('📡 API Response:', response);
+
+      if (response.success) {
+        setSuccess('Product restored successfully');
+        setOpenRestoreDialog(false);
+        setCurrentProduct(null);
+        await fetchProducts();
+      } else {
+        console.log('⚠️ Restore failed:', response.message);
+        setError(response.message || 'Failed to restore product');
+      }
+    } catch (err) {
+      console.error('❌ Error restoring product:', err);
+      setError(err.message || 'Failed to restore product');
+    }
+  };
+
   const handleDeleteCancel = () => {
     setOpenDeleteDialog(false);
     setCurrentProduct(null);
@@ -348,6 +382,11 @@ const Products = () => {
 
   const handlePermanentDeleteCancel = () => {
     setOpenPermanentDeleteDialog(false);
+    setCurrentProduct(null);
+  };
+
+  const handleRestoreCancel = () => {
+    setOpenRestoreDialog(false);
     setCurrentProduct(null);
   };
 
@@ -542,7 +581,17 @@ const Products = () => {
             </TableHead>
             <TableBody>
               {sortedProducts.map((product) => (
-                <TableRow key={product.id} className="table-row">
+                <TableRow 
+                  key={product.id} 
+                  className="table-row"
+                  sx={{
+                    opacity: product.is_active === 0 ? 0.5 : 1,
+                    backgroundColor: product.is_active === 0 ? 'rgba(255, 0, 0, 0.08)' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: product.is_active === 0 ? 'rgba(255, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.05)'
+                    }
+                  }}
+                >
                   <TableCell>
                     <Box className="product-image-box">
                       {product.image && !imageErrors[product.id] ? (
@@ -558,31 +607,62 @@ const Products = () => {
                     </Box>
                   </TableCell>
                   <TableCell className="product-name">
-                    {product.name}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {product.name}
+                      {product.is_active === 0 && (
+                        <Chip 
+                          label="Deleted" 
+                          size="small" 
+                          color="error" 
+                          variant="outlined"
+                          sx={{ height: 20, fontSize: '0.65rem', fontWeight: 'bold' }}
+                        />
+                      )}
+                    </Box>
                   </TableCell>
                   <TableCell className="product-price">
                     L.L {parseFloat(product.price).toFixed(2)}
                   </TableCell>
                   <TableCell>
                     <Box className="action-buttons">
-                      <Tooltip title="Edit Product">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleOpenDialog(product)}
-                          className="edit-btn"
-                        >
-                          <EditIcon />
-                        </IconButton>
+                      {/* Edit - disabled for deleted products */}
+                      <Tooltip title={product.is_active === 0 ? "Cannot edit deleted product" : "Edit Product"}>
+                        <span>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenDialog(product)}
+                            className="edit-btn"
+                            disabled={product.is_active === 0}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </span>
                       </Tooltip>
-                      <Tooltip title="Soft Delete">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleDeleteClick(product)}
-                          className="delete-btn"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
+                      
+                      {/* Soft Delete OR Restore */}
+                      {product.is_active === 1 ? (
+                        <Tooltip title="Soft Delete">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleDeleteClick(product)}
+                            className="delete-btn"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip title="Restore Product">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleRestoreClick(product)}
+                            className="restore-btn"
+                          >
+                            <RestoreFromTrashIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      
+                      {/* Permanent Delete - always visible */}
                       <Tooltip title="Permanent Delete">
                         <IconButton
                           size="small"
@@ -744,6 +824,30 @@ const Products = () => {
           </Button>
           <Button onClick={handlePermanentDeleteConfirm} variant="contained" className="permanent-delete-confirm-btn">
             Permanent Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Restore Confirmation Dialog */}
+      <Dialog
+        open={openRestoreDialog}
+        onClose={handleRestoreCancel}
+        PaperProps={{ className: 'dialog-paper' }}
+      >
+        <DialogTitle className="dialog-title">
+          Confirm Restore
+        </DialogTitle>
+        <DialogContent>
+          <Typography className="dialog-message">
+            Are you sure you want to restore "{currentProduct?.name}"?
+          </Typography>
+        </DialogContent>
+        <DialogActions className="dialog-actions">
+          <Button onClick={handleRestoreCancel} className="cancel-btn">
+            Cancel
+          </Button>
+          <Button onClick={handleRestoreConfirm} variant="contained" className="submit-btn">
+            Restore
           </Button>
         </DialogActions>
       </Dialog>
