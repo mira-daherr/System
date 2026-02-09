@@ -9,6 +9,7 @@ const app = express();
 // استدعي الـ routes بس، مش الـ controllers
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
+const gameRoutes = require('./routes/gameRoutes');
 
 // ============ Middleware ============
 app.use(cors());
@@ -23,6 +24,12 @@ app.use('/auth', authRoutes);
 app.use('/api/products', productRoutes);
 
 // Root route
+
+// Connect product routes to app - PROTECTED BY AUTHENTICATION
+// Any request starting with /api/products goes to productRoutes
+app.use('/api/products', productRoutes); // ← ADD THIS
+app.use('/api/games', gameRoutes); 
+// Root route for testing (GET /)
 app.get('/', (req, res) => {
   res.json({
     message: 'API is running successfully!',
