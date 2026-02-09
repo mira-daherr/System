@@ -8,6 +8,7 @@ const cors = require('cors');
 const app = express();
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes'); // ← ADD THIS
+const gameRoutes = require('./routes/gameRoutes');
 
 // ============ Middleware ============
 // Middleware = functions executed before reaching routes
@@ -29,7 +30,7 @@ app.use('/auth', authRoutes);
 // Connect product routes to app - PROTECTED BY AUTHENTICATION
 // Any request starting with /api/products goes to productRoutes
 app.use('/api/products', productRoutes); // ← ADD THIS
-
+app.use('/api/games', gameRoutes); 
 // Root route for testing (GET /)
 app.get('/', (req, res) => {
   res.json({ 
