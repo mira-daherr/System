@@ -1,0 +1,17 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: #0A0A0A;
+  color: #E8E8E8;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+.App {
+  min-height: 100vh;
+}
