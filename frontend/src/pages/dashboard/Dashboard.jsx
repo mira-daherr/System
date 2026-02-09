@@ -203,6 +203,7 @@ function Dashboard() {
 
             {/* Products Card */}
             <Card
+              onClick={() => navigate('/products')}
               sx={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',
