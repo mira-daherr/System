@@ -110,6 +110,12 @@ const ProductsByCategory = () => {
     setOrderBy(property);
   };
 
+  // Format currency for Lebanese Lira
+  const formatCurrency = (amount) => {
+    // Return price as-is from database
+    return amount;
+  };
+
   const sortedProducts = React.useMemo(() => {
     const comparator = (a, b) => {
       let aValue = a[orderBy];
@@ -457,7 +463,7 @@ const ProductsByCategory = () => {
                     </Box>
                   </TableCell>
                   <TableCell className="product-price">
-                    L.L {parseFloat(product.price).toFixed(2)}
+                    L.L {formatCurrency(product.price)}
                   </TableCell>
                   <TableCell>
                     <Box className="action-buttons">
