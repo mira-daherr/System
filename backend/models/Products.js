@@ -14,6 +14,20 @@ class Product {
     }
   }
 
+  // Find all products by category (INCLUDING DELETED)
+  static async findByCategory(category) {
+    try {
+      const [products] = await db.query(
+        'SELECT * FROM products WHERE category = ? ORDER BY is_active DESC, name ASC',
+        [category]
+      );
+      console.log(`📦 Products in ${category}:`, products.length);
+      return products;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   // Find product by ID (INCLUDING DELETED)
   static async findById(id) {
     try {
@@ -30,10 +44,10 @@ class Product {
   // Create new product
   static async create(productData) {
     try {
-      const { name, price, image } = productData;
+      const { name, price, category, image } = productData;
       const [result] = await db.query(
-        'INSERT INTO products (name, price, image, is_active) VALUES (?, ?, ?, 1)',
-        [name, price, image || null]
+        'INSERT INTO products (name, price, category, image, is_active) VALUES (?, ?, ?, ?, 1)',
+        [name, price, category || 'Uncategorized', image || null]
       );
       return result.insertId;
     } catch (error) {
@@ -44,7 +58,7 @@ class Product {
   // Update product
   static async update(id, productData) {
     try {
-      const { name, price, image, is_active } = productData;
+      const { name, price, category, image, is_active } = productData;
       
       const updates = [];
       const values = [];
@@ -56,6 +70,10 @@ class Product {
       if (price !== undefined) {
         updates.push('price = ?');
         values.push(price);
+      }
+      if (category !== undefined) {
+        updates.push('category = ?');
+        values.push(category);
       }
       if (image !== undefined) {
         updates.push('image = ?');
@@ -162,6 +180,18 @@ class Product {
         [minPrice, maxPrice]
       );
       return products;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Get all unique categories
+  static async getCategories() {
+    try {
+      const [categories] = await db.query(
+        'SELECT DISTINCT category FROM products WHERE category IS NOT NULL ORDER BY category ASC'
+      );
+      return categories.map(c => c.category);
     } catch (error) {
       throw error;
     }

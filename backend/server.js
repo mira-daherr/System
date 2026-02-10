@@ -6,9 +6,10 @@ const path = require('path');
 
 const app = express();
 
-// استدعي الـ routes بس، مش الـ controllers
+// ============ Routes ============
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
+const categoryRoutes = require('./routes/categoryRoutes'); // ← جديد
 const gameRoutes = require('./routes/gameRoutes');
 
 // ============ Middleware ============
@@ -19,16 +20,12 @@ app.use(express.urlencoded({ extended: true }));
 // ============ Static Files ============
 app.use('/products', express.static(path.join(__dirname, 'public', 'products')));
 
-// ============ Routes ============
+// ============ API Routes ============
 app.use('/auth', authRoutes);
 app.use('/api/products', productRoutes);
-
-// Root route
-
-// Connect product routes to app - PROTECTED BY AUTHENTICATION
-// Any request starting with /api/products goes to productRoutes
-app.use('/api/products', productRoutes); // ← ADD THIS
+app.use('/api/categories', categoryRoutes); // ← جديد
 app.use('/api/games', gameRoutes); 
+
 // Root route for testing (GET /)
 app.get('/', (req, res) => {
   res.json({
@@ -43,6 +40,7 @@ app.get('/', (req, res) => {
       products: {
         getAll: 'GET /api/products',
         getById: 'GET /api/products/:id',
+        getByCategory: 'GET /api/products/category/:category',
         search: 'GET /api/products/search?search=term',
         priceRange: 'GET /api/products/price-range?min=20&max=50',
         create: 'POST /api/products',
@@ -51,7 +49,24 @@ app.get('/', (req, res) => {
         restore: 'PUT /api/products/:id/restore',
         permanentDelete: 'DELETE /api/products/permanent/:id'
       },
-      note: '⚠️ All product routes require authentication (JWT token)'
+      categories: { // ← جديد
+        getAll: 'GET /api/categories',
+        getById: 'GET /api/categories/:id',
+        create: 'POST /api/categories',
+        update: 'PUT /api/categories/:id',
+        delete: 'DELETE /api/categories/:id'
+      },
+      games: {
+        getAll: 'GET /api/games',
+        getById: 'GET /api/games/:id',
+        search: 'GET /api/games/search?search=term',
+        create: 'POST /api/games',
+        update: 'PUT /api/games/:id',
+        softDelete: 'DELETE /api/games/:id',
+        restore: 'PUT /api/games/:id/restore',
+        permanentDelete: 'DELETE /api/games/permanent/:id'
+      },
+      note: '⚠️ All API routes require authentication (JWT token)'
     }
   });
 });
@@ -79,5 +94,7 @@ app.listen(PORT, () => {
   console.log(`📍 API endpoints:`);
   console.log(`   - Auth: http://localhost:${PORT}/auth/login`);
   console.log(`   - Products: http://localhost:${PORT}/api/products`);
-  console.log(`🔐 Product routes require JWT token`);
+  console.log(`   - Categories: http://localhost:${PORT}/api/categories`);
+  console.log(`   - Games: http://localhost:${PORT}/api/games`);
+  console.log(`🔐 All API routes require JWT token`);
 });

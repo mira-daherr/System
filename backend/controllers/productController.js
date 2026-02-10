@@ -16,7 +16,6 @@ const deleteImageFile = (imagePath) => {
 };
 
 // GET all products
-// GET all products
 exports.getAllProducts = async (req, res) => {
   try {
     console.log('🔵 getAllProducts called');
@@ -35,6 +34,51 @@ exports.getAllProducts = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching products',
+      error: error.message
+    });
+  }
+};
+
+// GET products by category
+exports.getProductsByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+    console.log('🔵 getProductsByCategory called for:', category);
+    
+    const products = await Product.findByCategory(category);
+    
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      category: category,
+      data: products
+    });
+  } catch (error) {
+    console.error('Error fetching products by category:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching products by category',
+      error: error.message
+    });
+  }
+};
+
+// GET all categories
+exports.getCategories = async (req, res) => {
+  try {
+    console.log('🔵 getCategories called');
+    const categories = await Product.getCategories();
+    
+    res.status(200).json({
+      success: true,
+      count: categories.length,
+      data: categories
+    });
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching categories',
       error: error.message
     });
   }
@@ -71,7 +115,7 @@ exports.getProductById = async (req, res) => {
 // CREATE new product
 exports.createProduct = async (req, res) => {
   try {
-    const { name, price } = req.body;
+    const { name, price, category } = req.body;
 
     // Validation
     if (!name || !price) {
@@ -107,6 +151,7 @@ exports.createProduct = async (req, res) => {
     const productId = await Product.create({
       name,
       price: parseFloat(price),
+      category: category || 'Uncategorized',
       image: imageUrl
     });
 
@@ -137,7 +182,7 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, price, is_active } = req.body;
+    const { name, price, category, is_active } = req.body;
 
     // Check if product exists
     const productExists = await Product.exists(id);
@@ -184,6 +229,7 @@ exports.updateProduct = async (req, res) => {
     const updateData = {
       name,
       price: price ? parseFloat(price) : undefined,
+      category,
       image: imageUrl,
       is_active
     };

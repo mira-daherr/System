@@ -7,11 +7,17 @@ const upload = require('../config/upload');
 // Apply authentication to ALL product routes
 router.use(authenticate);
 
+// GET all categories (MUST be before other routes)
+router.get('/categories', productController.getCategories);
+
 // SEARCH products by name (MUST be before /:id)
 router.get('/search', productController.searchProducts);
 
 // GET products by price range (MUST be before /:id)
 router.get('/price-range', productController.getProductsByPriceRange);
+
+// GET products by category (MUST be before /:id)
+router.get('/category/:category', productController.getProductsByCategory);
 
 // GET all products
 router.get('/', productController.getAllProducts);
