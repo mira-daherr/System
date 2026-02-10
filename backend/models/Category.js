@@ -142,7 +142,7 @@ class Category {
           c.*,
           COUNT(p.id) as product_count
         FROM categories c
-        LEFT JOIN products p ON c.name = p.category AND p.is_active = 1
+        LEFT JOIN products p ON c.name = p.category COLLATE utf8mb4_unicode_ci AND p.is_active = 1
         GROUP BY c.id
         ORDER BY c.name ASC
       `);
