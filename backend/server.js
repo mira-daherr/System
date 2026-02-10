@@ -11,6 +11,7 @@ const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const categoryRoutes = require('./routes/categoryRoutes'); // ← جديد
 const gameRoutes = require('./routes/gameRoutes');
+const expenseRoutes = require('./routes/expenseRoutes');
 
 // ============ Middleware ============
 app.use(cors());
@@ -24,7 +25,8 @@ app.use('/products', express.static(path.join(__dirname, 'public', 'products')))
 app.use('/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes); // ← جديد
-app.use('/api/games', gameRoutes); 
+app.use('/api/games', gameRoutes);
+app.use('/api/expenses', expenseRoutes); 
 
 // Root route for testing (GET /)
 app.get('/', (req, res) => {
@@ -66,6 +68,16 @@ app.get('/', (req, res) => {
         restore: 'PUT /api/games/:id/restore',
         permanentDelete: 'DELETE /api/games/permanent/:id'
       },
+      expenses: {
+        getAll: 'GET /api/expenses',
+        getById: 'GET /api/expenses/:id',
+        recent: 'GET /api/expenses/recent?limit=10',
+        dateRange: 'GET /api/expenses/date-range?startDate=2024-01-01&endDate=2024-12-31',
+        analytics: 'GET /api/expenses/analytics?startDate=2024-01-01&endDate=2024-12-31&groupBy=day',
+        create: 'POST /api/expenses',
+        update: 'PUT /api/expenses/:id',
+        delete: 'DELETE /api/expenses/:id'
+      },
       note: '⚠️ All API routes require authentication (JWT token)'
     }
   });
@@ -96,5 +108,6 @@ app.listen(PORT, () => {
   console.log(`   - Products: http://localhost:${PORT}/api/products`);
   console.log(`   - Categories: http://localhost:${PORT}/api/categories`);
   console.log(`   - Games: http://localhost:${PORT}/api/games`);
+  console.log(`   - Expenses: http://localhost:${PORT}/api/expenses`);
   console.log(`🔐 All API routes require JWT token`);
 });
