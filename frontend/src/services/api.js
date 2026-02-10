@@ -67,6 +67,30 @@ export const productsAPI = {
     }
   },
 
+  // GET all categories
+  getCategories: async (token) => {
+    try {
+      const response = await api.get('/api/products/categories', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // GET products by category
+  getByCategory: async (category, token) => {
+    try {
+      const response = await api.get(`/api/products/category/${category}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
   // GET single product by ID
   getById: async (id, token) => {
     try {
@@ -154,29 +178,190 @@ export const productsAPI = {
   },
 
   // RESTORE soft-deleted product
- // RESTORE soft-deleted product
-restore: async (id, token) => {
-  try {
-    console.log('📡 Calling restore API:');
-    console.log('   - Product ID:', id);
-    console.log('   - URL:', `/api/products/${id}/restore`);
-    console.log('   - Token:', token ? 'exists' : 'missing');
-    
-    const response = await api.put(`/api/products/${id}/restore`, {}, {
-      headers: { 
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    console.log('✅ API Response:', response.data);
-    return response.data;
-  } catch (error) {
-    console.error('❌ API Error:', error.response?.data || error.message);
-    console.error('Status:', error.response?.status);
-    throw error.response?.data || { message: 'Network error occurred' };
+  restore: async (id, token) => {
+    try {
+      console.log('📡 Calling restore API:');
+      console.log('   - Product ID:', id);
+      console.log('   - URL:', `/api/products/${id}/restore`);
+      console.log('   - Token:', token ? 'exists' : 'missing');
+      
+      const response = await api.put(`/api/products/${id}/restore`, {}, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('✅ API Response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ API Error:', error.response?.data || error.message);
+      console.error('Status:', error.response?.status);
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
   }
-}
+};
+
+// Categories API calls - NEW
+export const categoriesAPI = {
+  // GET all categories
+  getAll: async (token) => {
+    try {
+      const response = await api.get('/api/categories', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // GET single category by ID
+  getById: async (id, token) => {
+    try {
+      const response = await api.get(`/api/categories/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // CREATE new category
+  create: async (categoryData, token) => {
+    try {
+      const response = await api.post('/api/categories', categoryData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // UPDATE category
+  update: async (id, categoryData, token) => {
+    try {
+      const response = await api.put(`/api/categories/${id}`, categoryData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // DELETE category
+  delete: async (id, token) => {
+    try {
+      const response = await api.delete(`/api/categories/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  }
+};
+
+export const gamesAPI = {
+  // GET all games
+  getAll: async (token) => {
+    try {
+      const response = await api.get('/api/games', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // GET single game by ID
+  getById: async (id, token) => {
+    try {
+      const response = await api.get(`/api/games/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // SEARCH games by name
+  search: async (searchTerm, token) => {
+    try {
+      const response = await api.get(`/api/games/search`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { search: searchTerm }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // CREATE new game
+  create: async (gameData, token) => {
+    try {
+      const response = await api.post('/api/games', gameData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // UPDATE game
+  update: async (id, gameData, token) => {
+    try {
+      const response = await api.put(`/api/games/${id}`, gameData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // DELETE game (soft delete)
+  delete: async (id, token) => {
+    try {
+      const response = await api.delete(`/api/games/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // PERMANENT DELETE game
+  permanentDelete: async (id, token) => {
+    try {
+      const response = await api.delete(`/api/games/permanent/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // RESTORE soft-deleted game
+  restore: async (id, token) => {
+    try {
+      const response = await api.put(`/api/games/${id}/restore`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  }
 };
 
 export default api;

@@ -168,6 +168,7 @@ function Dashboard() {
 
             {/* Games Card */}
             <Card
+              onClick={() => navigate('/games')}
               sx={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',
@@ -201,9 +202,9 @@ function Dashboard() {
               </CardContent>
             </Card>
 
-            {/* Products Card */}
+            {/* Products Card - UPDATED TO /categories */}
             <Card
-              onClick={() => navigate('/products')}
+              onClick={() => navigate('/categories')}
               sx={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',

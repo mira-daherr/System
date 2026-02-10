@@ -4,6 +4,9 @@ import Login from "./pages/login/login";
 import Dashboard from "./pages/dashboard/Dashboard";
 import ForgotPassword from "./pages/login/forgetpassword";
 import Products from "./pages/products/Products";
+import Categories from "./pages/Categories/Categories";
+import ProductsByCategory from "./pages/ProductsByCategory/ProductsByCategory";
+import Games from './pages/games/Game';
 import { isAuthenticated } from "./utils/auth";
 import "./App.css";
 
@@ -18,6 +21,9 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          
+          {/* Protected routes */}
           <Route
             path="/dashboard"
             element={
@@ -26,6 +32,26 @@ function App() {
               </ProtectedRoute>
             }
           />
+          
+          {/* Categories Routes - NEW */}
+          <Route
+            path="/categories"
+            element={
+              <ProtectedRoute>
+                <Categories />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/products/category/:category"
+            element={
+              <ProtectedRoute>
+                <ProductsByCategory />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* All Products Route - EXISTING (keep as alternative view) */}
           <Route
             path="/products"
             element={
@@ -34,8 +60,18 @@ function App() {
               </ProtectedRoute>
             }
           />
+          
+          <Route
+            path="/games"
+            element={
+              <ProtectedRoute>
+                <Games />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Redirect root to login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
         </Routes>
       </div>
     </Router>
