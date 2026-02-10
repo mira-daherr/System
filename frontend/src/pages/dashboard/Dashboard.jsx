@@ -7,6 +7,7 @@ import {
   Receipt as ReceiptIcon,
   SportsEsports as GamesIcon,
   Inventory as ProductsIcon,
+  Category as CategoryIcon,
   BarChart as ChartIcon
 } from '@mui/icons-material';
 import { getUserData, clearAuthData } from '../../utils/auth';
@@ -19,17 +20,13 @@ function Dashboard() {
 
   const handleLogout = async () => {
     try {
-      // Call logout API
       if (user?.id) {
         await authAPI.logout(user.id);
       }
-
-      // Clear local auth data
       clearAuthData();
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
-      // Still clear local data and navigate even if logout API fails
       clearAuthData();
       navigate('/login');
     }
@@ -202,9 +199,45 @@ function Dashboard() {
               </CardContent>
             </Card>
 
-            {/* Products Card - UPDATED TO /categories */}
+            {/* Categories Card - NEW */}
             <Card
               onClick={() => navigate('/categories')}
+              sx={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 51, 51, 0.3)',
+                borderRadius: 2,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-5px)',
+                  borderColor: '#ff3333',
+                  boxShadow: '0 10px 30px rgba(255, 51, 51, 0.3)'
+                }
+              }}
+            >
+              <CardContent sx={{ textAlign: 'center', padding: 4 }}>
+                <Box sx={{
+                  display: 'inline-flex',
+                  padding: 2.5,
+                  borderRadius: '50%',
+                  background: 'rgba(255, 193, 7, 0.15)',
+                  marginBottom: 2
+                }}>
+                  <CategoryIcon sx={{ fontSize: 48, color: '#ffc107' }} />
+                </Box>
+                <Typography variant="h5" sx={{ color: '#ff3333', fontWeight: 'bold', marginBottom: 1 }}>
+                  Categories
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#ccc' }}>
+                  Browse products by category
+                </Typography>
+              </CardContent>
+            </Card>
+
+            {/* All Products Card - NEW */}
+            <Card
+              onClick={() => navigate('/products')}
               sx={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',
@@ -230,10 +263,10 @@ function Dashboard() {
                   <ProductsIcon sx={{ fontSize: 48, color: '#4caf50' }} />
                 </Box>
                 <Typography variant="h5" sx={{ color: '#ff3333', fontWeight: 'bold', marginBottom: 1 }}>
-                  Products
+                  All Products
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#ccc' }}>
-                  Browse and manage product inventory
+                  View complete product inventory
                 </Typography>
               </CardContent>
             </Card>
