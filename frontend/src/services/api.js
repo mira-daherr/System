@@ -364,4 +364,109 @@ export const gamesAPI = {
   }
 };
 
+// Expenses API calls
+export const expensesAPI = {
+  // GET all expenses
+  getAll: async (token) => {
+    try {
+      const response = await api.get('/api/expenses', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // GET single expense by ID
+  getById: async (id, token) => {
+    try {
+      const response = await api.get(`/api/expenses/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // GET recent expenses
+  getRecent: async (limit, token) => {
+    try {
+      const response = await api.get(`/api/expenses/recent?limit=${limit}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // GET expenses by date range
+  getByDateRange: async (startDate, endDate, token) => {
+    try {
+      const response = await api.get(
+        `/api/expenses/date-range?startDate=${startDate}&endDate=${endDate}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // GET expense analytics
+  getAnalytics: async (startDate, endDate, groupBy, token) => {
+    try {
+      const response = await api.get(
+        `/api/expenses/analytics?startDate=${startDate}&endDate=${endDate}&groupBy=${groupBy}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // CREATE new expense
+  create: async (expenseData, token) => {
+    try {
+      const response = await api.post('/api/expenses', expenseData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // UPDATE expense
+  update: async (id, expenseData, token) => {
+    try {
+      const response = await api.put(`/api/expenses/${id}`, expenseData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // DELETE expense
+  delete: async (id, token) => {
+    try {
+      const response = await api.delete(`/api/expenses/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  }
+};
+
 export default api;
