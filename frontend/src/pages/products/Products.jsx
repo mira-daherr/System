@@ -401,6 +401,12 @@ const Products = () => {
     setImageErrors(prev => ({ ...prev, [productId]: true }));
   };
 
+  // Format currency for Lebanese Lira
+  const formatCurrency = (amount) => {
+    // Return price as-is from database
+    return amount;
+  };
+
   const hasActiveFilters = searchTerm || priceFilter !== 'all';
 
   return (
@@ -442,11 +448,11 @@ const Products = () => {
                 startAdornment={<FilterListIcon className="filter-icon" />}
               >
                 <MenuItem value="all">All Prices</MenuItem>
-                <MenuItem value="0-10">L.L 0 - L.L 10</MenuItem>
-                <MenuItem value="10-50">L.L 10 - L.L 50</MenuItem>
-                <MenuItem value="50-100">L.L 50 - L.L 100</MenuItem>
-                <MenuItem value="100-500">L.L 100 - L.L 500</MenuItem>
-                <MenuItem value="500-99999">L.L 500+</MenuItem>
+                <MenuItem value="0-10000">L.L 0 - L.L 10,000</MenuItem>
+                <MenuItem value="10000-50000">L.L 10,000 - L.L 50,000</MenuItem>
+                <MenuItem value="50000-100000">L.L 50,000 - L.L 100,000</MenuItem>
+                <MenuItem value="100000-500000">L.L 100,000 - L.L 500,000</MenuItem>
+                <MenuItem value="500000-99999999">L.L 500,000+</MenuItem>
                 <MenuItem value="custom">Custom Range</MenuItem>
               </Select>
             </FormControl>
@@ -621,7 +627,7 @@ const Products = () => {
                     </Box>
                   </TableCell>
                   <TableCell className="product-price">
-                    L.L {parseFloat(product.price).toFixed(2)}
+                    L.L {formatCurrency(product.price)}
                   </TableCell>
                   <TableCell>
                     <Box className="action-buttons">

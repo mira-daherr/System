@@ -150,6 +150,12 @@ const Games = () => {
     return [...games].sort(comparator);
   }, [games, order, orderBy]);
 
+  // Format currency for Lebanese Lira
+  const formatCurrency = (amount) => {
+    // Return price as-is from database
+    return amount;
+  };
+
   const handleOpenDialog = (game = null) => {
     if (game) {
       setEditMode(true);
@@ -489,12 +495,12 @@ const Games = () => {
                   </TableCell>
                   <TableCell className="game-price">
                     {parseFloat(game.price_per_hour) > 0 
-                      ? `L.L ${parseFloat(game.price_per_hour).toFixed(2)}`
+                      ? `L.L ${formatCurrency(game.price_per_hour)}`
                       : '-'}
                   </TableCell>
                   <TableCell className="game-price">
                     {parseFloat(game.price_per_round) > 0 
-                      ? `L.L ${parseFloat(game.price_per_round).toFixed(2)}`
+                      ? `L.L ${formatCurrency(game.price_per_round)}`
                       : '-'}
                   </TableCell>
                   <TableCell>

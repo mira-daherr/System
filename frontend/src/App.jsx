@@ -7,6 +7,7 @@ import Products from "./pages/products/Products";
 import Categories from "./pages/Categories/Categories";
 import ProductsByCategory from "./pages/ProductsByCategory/ProductsByCategory";
 import Games from './pages/games/Game';
+import Expenses from './pages/Expenses/Expenses';
 import { isAuthenticated } from "./utils/auth";
 import "./App.css";
 
@@ -66,6 +67,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Games />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/expenses"
+            element={
+              <ProtectedRoute>
+                <Expenses />
               </ProtectedRoute>
             }
           />

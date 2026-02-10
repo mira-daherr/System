@@ -130,6 +130,7 @@ function Dashboard() {
 
             {/* Expenses Card */}
             <Card
+              onClick={() => navigate('/expenses')}
               sx={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',
