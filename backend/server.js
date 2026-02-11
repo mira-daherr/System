@@ -9,9 +9,10 @@ const app = express();
 // ============ Routes ============
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
-const categoryRoutes = require('./routes/categoryRoutes'); // ← جديد
+const categoryRoutes = require('./routes/categoryRoutes');
 const gameRoutes = require('./routes/gameRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
+const customerPurchaseRoutes = require('./routes/customerPurchaseRoutes'); // ← جديد
 
 // ============ Middleware ============
 app.use(cors());
@@ -24,9 +25,10 @@ app.use('/products', express.static(path.join(__dirname, 'public', 'products')))
 // ============ API Routes ============
 app.use('/auth', authRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/categories', categoryRoutes); // ← جديد
+app.use('/api/categories', categoryRoutes);
 app.use('/api/games', gameRoutes);
-app.use('/api/expenses', expenseRoutes); 
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/customer-purchases', customerPurchaseRoutes); // ← جديد
 
 // Root route for testing (GET /)
 app.get('/', (req, res) => {
@@ -51,7 +53,7 @@ app.get('/', (req, res) => {
         restore: 'PUT /api/products/:id/restore',
         permanentDelete: 'DELETE /api/products/permanent/:id'
       },
-      categories: { // ← جديد
+      categories: {
         getAll: 'GET /api/categories',
         getById: 'GET /api/categories/:id',
         create: 'POST /api/categories',
@@ -77,6 +79,14 @@ app.get('/', (req, res) => {
         create: 'POST /api/expenses',
         update: 'PUT /api/expenses/:id',
         delete: 'DELETE /api/expenses/:id'
+      },
+      customerPurchases: { // ← جديد
+        createPurchase: 'POST /api/customer-purchases/purchase',
+        getAllPurchases: 'GET /api/customer-purchases/purchases',
+        getPurchaseById: 'GET /api/customer-purchases/purchase/:id',
+        deletePurchase: 'DELETE /api/customer-purchases/purchase/:id',
+        getAllCustomers: 'GET /api/customer-purchases/customers',
+        getCustomerById: 'GET /api/customer-purchases/customer/:id'
       },
       note: '⚠️ All API routes require authentication (JWT token)'
     }
@@ -109,5 +119,6 @@ app.listen(PORT, () => {
   console.log(`   - Categories: http://localhost:${PORT}/api/categories`);
   console.log(`   - Games: http://localhost:${PORT}/api/games`);
   console.log(`   - Expenses: http://localhost:${PORT}/api/expenses`);
+  console.log(`   - Customer Purchases: http://localhost:${PORT}/api/customer-purchases`); // ← جديد
   console.log(`🔐 All API routes require JWT token`);
 });

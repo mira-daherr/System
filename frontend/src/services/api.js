@@ -468,5 +468,87 @@ export const expensesAPI = {
     }
   }
 };
+// Customer Purchases API calls
+export const customerPurchasesAPI = {
+  // ===================================
+  // PURCHASES
+  // ===================================
+  
+  // CREATE new purchase
+  createPurchase: async (purchaseData, token) => {
+    try {
+      const response = await api.post('/api/customer-purchases/purchase', purchaseData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // GET all purchases
+  getAllPurchases: async (token) => {
+    try {
+      const response = await api.get('/api/customer-purchases/purchases', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // GET single purchase by ID
+  getPurchaseById: async (id, token) => {
+    try {
+      const response = await api.get(`/api/customer-purchases/purchase/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // DELETE purchase
+  deletePurchase: async (id, token) => {
+    try {
+      const response = await api.delete(`/api/customer-purchases/purchase/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // ===================================
+  // CUSTOMERS
+  // ===================================
+
+  // GET all customers
+  getAllCustomers: async (token) => {
+    try {
+      const response = await api.get('/api/customer-purchases/customers', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // GET single customer by ID with sales
+  getCustomerById: async (id, token) => {
+    try {
+      const response = await api.get(`/api/customer-purchases/customer/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  }
+};
 
 export default api;

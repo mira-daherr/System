@@ -94,39 +94,41 @@ function Dashboard() {
             </Card>
 
             {/* Customer Purchases Card */}
-            <Card
-              sx={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 51, 51, 0.3)',
-                borderRadius: 2,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-5px)',
-                  borderColor: '#ff3333',
-                  boxShadow: '0 10px 30px rgba(255, 51, 51, 0.3)'
-                }
-              }}
-            >
-              <CardContent sx={{ textAlign: 'center', padding: 4 }}>
-                <Box sx={{
-                  display: 'inline-flex',
-                  padding: 2.5,
-                  borderRadius: '50%',
-                  background: 'rgba(255, 152, 0, 0.15)',
-                  marginBottom: 2
-                }}>
-                  <ShoppingCartIcon sx={{ fontSize: 48, color: '#ff9800' }} />
-                </Box>
-                <Typography variant="h5" sx={{ color: '#ff3333', fontWeight: 'bold', marginBottom: 1 }}>
-                  Customer Purchases
-                </Typography>
-                <Typography variant="body2" sx={{ color: '#ccc' }}>
-                  View and track customer purchase history
-                </Typography>
-              </CardContent>
-            </Card>
+          {/* Customer Purchases Card */}
+<Card
+  onClick={() => navigate('/customer-purchase')}
+  sx={{
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 51, 51, 0.3)',
+    borderRadius: 2,
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+      transform: 'translateY(-5px)',
+      borderColor: '#ff3333',
+      boxShadow: '0 10px 30px rgba(255, 51, 51, 0.3)'
+    }
+  }}
+>
+  <CardContent sx={{ textAlign: 'center', padding: 4 }}>
+    <Box sx={{
+      display: 'inline-flex',
+      padding: 2.5,
+      borderRadius: '50%',
+      background: 'rgba(255, 152, 0, 0.15)',
+      marginBottom: 2
+    }}>
+      <ShoppingCartIcon sx={{ fontSize: 48, color: '#ff9800' }} />
+    </Box>
+    <Typography variant="h5" sx={{ color: '#ff3333', fontWeight: 'bold', marginBottom: 1 }}>
+      Customer Purchases
+    </Typography>
+    <Typography variant="body2" sx={{ color: '#ccc' }}>
+      View and track customer purchase history
+    </Typography>
+  </CardContent>
+</Card>
 
             {/* Expenses Card */}
             <Card

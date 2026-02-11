@@ -8,6 +8,7 @@ import Categories from "./pages/Categories/Categories";
 import ProductsByCategory from "./pages/ProductsByCategory/ProductsByCategory";
 import Games from './pages/games/Game';
 import Expenses from './pages/Expenses/Expenses';
+import CustomerPurchase from './pages/Customers/CustomerPurchase';
 import { isAuthenticated } from "./utils/auth";
 import "./App.css";
 
@@ -34,7 +35,7 @@ function App() {
             }
           />
           
-          {/* Categories Routes - NEW */}
+          {/* Categories Routes */}
           <Route
             path="/categories"
             element={
@@ -43,6 +44,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          
           <Route
             path="/products/category/:category"
             element={
@@ -52,7 +54,7 @@ function App() {
             }
           />
           
-          {/* All Products Route - EXISTING (keep as alternative view) */}
+          {/* All Products Route */}
           <Route
             path="/products"
             element={
@@ -62,6 +64,7 @@ function App() {
             }
           />
           
+          {/* Games Route */}
           <Route
             path="/games"
             element={
@@ -71,11 +74,22 @@ function App() {
             }
           />
           
+          {/* Expenses Route */}
           <Route
             path="/expenses"
             element={
               <ProtectedRoute>
                 <Expenses />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Customer Purchase Route */}
+          <Route
+            path="/customer-purchase"
+            element={
+              <ProtectedRoute>
+                <CustomerPurchase />
               </ProtectedRoute>
             }
           />
