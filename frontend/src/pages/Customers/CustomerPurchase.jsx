@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { gamesAPI, productsAPI, customerPurchasesAPI } from '../../services/api';
+import { gamesAPI, categoriesAPI, customerPurchasesAPI } from '../../services/api';
 import './style.css';
 
 const CustomerPurchase = () => {
@@ -13,7 +13,9 @@ const CustomerPurchase = () => {
   
   // Available Items States
   const [games, setGames] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [categoryProducts, setCategoryProducts] = useState([]);
   
   // Selected Items States
   const [selectedGames, setSelectedGames] = useState([]);
@@ -25,10 +27,10 @@ const CustomerPurchase = () => {
   // Loading State
   const [loading, setLoading] = useState(false);
 
-  // Fetch games and products on component mount
+  // Fetch games and categories on component mount
   useEffect(() => {
     fetchGames();
-    fetchProducts();
+    fetchCategories();
   }, []);
 
   // ===================================
@@ -46,13 +48,29 @@ const CustomerPurchase = () => {
   };
 
   // ===================================
-  // FETCH PRODUCTS
+  // FETCH CATEGORIES
   // ===================================
-  const fetchProducts = async () => {
+  const fetchCategories = async () => {
     try {
-      const response = await productsAPI.getAll(token);
-      console.log('Products Response:', response);
-      setProducts(response.products || response.data || []);
+      const response = await categoriesAPI.getAll(token);
+      console.log('Categories Response:', response);
+      setCategories(response.data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      alert('Error loading categories!');
+    }
+  };
+
+  // ===================================
+  // FETCH PRODUCTS BY CATEGORY
+  // ===================================
+  const handleCategoryClick = async (categoryName) => {
+    setSelectedCategory(categoryName);
+    
+    try {
+      const response = await categoriesAPI.getProductsByCategory(categoryName, token);
+      console.log('Category Products Response:', response);
+      setCategoryProducts(response.data || []);
     } catch (error) {
       console.error('Error fetching products:', error);
       alert('Error loading products!');
@@ -195,15 +213,32 @@ const CustomerPurchase = () => {
       const response = await customerPurchasesAPI.createPurchase(purchaseData, token);
 
       if (response.success) {
-        alert('✅ Purchase saved successfully!');
+        // ✨ التعديل الجديد هنا
+        const continueAdding = window.confirm(
+          '✅ Purchase saved successfully!\n\n' +
+          'Sale ID: ' + response.data.saleId + '\n' +
+          'Customer: ' + customerName + '\n' +
+          'Total: L.L ' + totalAmount.toFixed(2) + '\n' +
+          'Paid: L.L ' + paidAmount.toFixed(2) + '\n' +
+          'Remaining: L.L ' + remainingAmount.toFixed(2) + '\n\n' +
+          'Click OK to add another purchase\n' +
+          'Click Cancel to go back'
+        );
         
-        // Reset form
-        setCustomerName('');
-        setPhone('');
-        setAddress('');
-        setSelectedGames([]);
-        setSelectedProducts([]);
-        setPaidAmount(0);
+        if (continueAdding) {
+          // Reset form للفاتورة الجديدة
+          setCustomerName('');
+          setPhone('');
+          setAddress('');
+          setSelectedGames([]);
+          setSelectedProducts([]);
+          setPaidAmount(0);
+          setSelectedCategory(null);
+          setCategoryProducts([]);
+        } else {
+          // الرجوع للصفحة السابقة
+          window.history.back();
+        }
       }
     } catch (error) {
       console.error('Error saving purchase:', error);
@@ -347,78 +382,99 @@ const CustomerPurchase = () => {
             )}
           </div>
 
-          {/* ========== PRODUCTS SELECTION ========== */}
+          {/* ========== PRODUCTS BY CATEGORY ========== */}
           <div className="section">
             <h2 className="section-title">3️⃣ Select Products</h2>
-            <div className="items-grid">
-              {products.length === 0 ? (
-                <p className="no-items">No products available</p>
+            
+            {/* Categories Grid */}
+            <div className="categories-grid">
+              {categories.length === 0 ? (
+                <p className="no-items">No categories available</p>
               ) : (
-                products.map(product => (
+                categories.map(cat => (
                   <div 
-                    key={product.id} 
-                    className="item-card" 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleAddProduct(product);
-                    }}
+                    key={cat.id}
+                    className={`category-card ${selectedCategory === cat.name ? 'active' : ''}`}
+                    onClick={() => handleCategoryClick(cat.name)}
+                    style={{ borderColor: cat.color }}
                   >
-                    {/* Product Image */}
-                    <div className="item-icon">
-                      {product.image ? (
-                        <img 
-                          src={product.image} 
-                          alt={product.name}
-                          className="product-image"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextElementSibling.style.display = 'block';
-                          }}
-                        />
-                      ) : null}
-                      <div 
-                        className="product-emoji"
-                        style={{
-                          display: product.image ? 'none' : 'block'
-                        }}
-                      >
-                        {product.category === 'Chips' && '🍟'}
-                        {product.category === 'Drinks' && '🥤'}
-                        {product.category === 'Hot Drinks' && '☕'}
-                        {product.category === 'Sandwiches' && '🥪'}
-                        {product.category === 'Sweets' && '🍬'}
-                        {!['Chips', 'Drinks', 'Hot Drinks', 'Sandwiches', 'Sweets'].includes(product.category) && '🛒'}
-                      </div>
-                    </div>
-
-                    {/* Product Name */}
-                    <div className="item-name">{product.name}</div>
-
-                    {/* Product Category */}
-                    <div className="item-description">{product.category || 'Product'}</div>
-
-                    {/* Product Price */}
-                    <div className="item-price">
-                      L.L {parseFloat(product.price || 0).toFixed(2)}
-                    </div>
-
-                    {/* Add Button */}
-                    <button 
-                      type="button" 
-                      className="add-btn"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleAddProduct(product);
-                      }}
-                    >
-                      +
-                    </button>
+                    <span className="category-icon">{cat.icon}</span>
+                    <span className="category-name">{cat.name}</span>
                   </div>
                 ))
               )}
             </div>
 
+            {/* Products in Selected Category */}
+            {selectedCategory && (
+              <div className="products-section">
+                <h3 style={{ marginTop: '20px', marginBottom: '15px' }}>
+                  📦 {selectedCategory}
+                </h3>
+                <div className="items-grid">
+                  {categoryProducts.length === 0 ? (
+                    <p className="no-items">No products in this category</p>
+                  ) : (
+                    categoryProducts.map(product => (
+                      <div 
+                        key={product.id} 
+                        className="item-card"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAddProduct(product);
+                        }}
+                      >
+                        {/* Product Image */}
+                        <div className="item-icon">
+                          {product.image ? (
+                            <img 
+                              src={product.image} 
+                              alt={product.name}
+                              className="product-image"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextElementSibling.style.display = 'block';
+                              }}
+                            />
+                          ) : null}
+                          <div 
+                            className="product-emoji"
+                            style={{
+                              display: product.image ? 'none' : 'block'
+                            }}
+                          >
+                            🛒
+                          </div>
+                        </div>
+
+                        {/* Product Name */}
+                        <div className="item-name">{product.name}</div>
+
+                        {/* Product Price */}
+                        <div className="item-price">
+                          L.L {parseFloat(product.price || 0).toFixed(2)}
+                        </div>
+
+                        {/* Add Button */}
+                        <button 
+                          type="button" 
+                          className="add-btn"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleAddProduct(product);
+                          }}
+                        >
+                          +
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Selected Products Display */}
             {selectedProducts.length > 0 && (
               <div className="selected-items">
                 <h3>Selected Products:</h3>

@@ -14,7 +14,7 @@ class Customer {
   // Find customer by phone
   static async findByPhone(phone) {
     const [rows] = await db.query(
-      'SELECT * FROM customers WHERE phone = ? AND is_deleted = 0',
+      'SELECT * FROM customers WHERE phone = ?',
       [phone]
     );
     return rows[0];
@@ -23,16 +23,16 @@ class Customer {
   // Find customer by ID
   static async findById(id) {
     const [rows] = await db.query(
-      'SELECT * FROM customers WHERE id = ? AND is_deleted = 0',
+      'SELECT * FROM customers WHERE id = ?',
       [id]
     );
     return rows[0];
   }
 
-  // Get all customers (not deleted)
+  // Get all customers
   static async getAll() {
     const [rows] = await db.query(
-      'SELECT * FROM customers WHERE is_deleted = 0 ORDER BY created_at DESC'
+      'SELECT * FROM customers ORDER BY created_at DESC'
     );
     return rows;
   }
@@ -45,10 +45,10 @@ class Customer {
     );
   }
 
-  // Soft delete customer
+  // Delete customer (hard delete)
   static async delete(id) {
     await db.query(
-      'UPDATE customers SET is_deleted = 1 WHERE id = ?',
+      'DELETE FROM customers WHERE id = ?',
       [id]
     );
   }

@@ -202,7 +202,7 @@ export const productsAPI = {
   }
 };
 
-// Categories API calls - NEW
+// Categories API calls
 export const categoriesAPI = {
   // GET all categories
   getAll: async (token) => {
@@ -220,6 +220,18 @@ export const categoriesAPI = {
   getById: async (id, token) => {
     try {
       const response = await api.get(`/api/categories/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // ✨ NEW: GET products by category name
+  getProductsByCategory: async (categoryName, token) => {
+    try {
+      const response = await api.get(`/api/categories/${encodeURIComponent(categoryName)}/products`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       return response.data;
@@ -468,6 +480,7 @@ export const expensesAPI = {
     }
   }
 };
+
 // Customer Purchases API calls
 export const customerPurchasesAPI = {
   // ===================================

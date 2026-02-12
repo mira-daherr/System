@@ -9,6 +9,9 @@ router.use(authenticate);
 // GET all categories (with product counts)
 router.get('/', categoryController.getAllCategories);
 
+// ✨ NEW: GET products by category name (ضعه قبل /:id)
+router.get('/:name/products', categoryController.getProductsByCategory);
+
 // GET single category by ID
 router.get('/:id', categoryController.getCategoryById);
 

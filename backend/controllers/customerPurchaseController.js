@@ -1,7 +1,7 @@
 const Customer = require('../models/Customer');
 const Sale = require('../models/Sale');
 const SaleItem = require('../models/SaleItem');
-
+const db = require('../config/db'); 
 // ===================================
 // CREATE new purchase
 // ===================================
