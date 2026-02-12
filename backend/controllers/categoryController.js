@@ -1,4 +1,5 @@
 const Category = require('../models/Category');
+const db = require('../config/db'); // أضف هذا في الأعلى
 
 // GET all categories
 exports.getAllCategories = async (req, res) => {
@@ -43,6 +44,33 @@ exports.getCategoryById = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching category',
+      error: error.message
+    });
+  }
+};
+
+// ✨ GET products by category name
+exports.getProductsByCategory = async (req, res) => {
+  try {
+    const { name } = req.params;
+    
+    const [products] = await db.query(`
+      SELECT * FROM products 
+      WHERE category = ? 
+      AND is_active = 1
+      ORDER BY name
+    `, [name]);
+    
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      data: products
+    });
+  } catch (error) {
+    console.error('Error fetching products by category:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching products',
       error: error.message
     });
   }
