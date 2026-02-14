@@ -155,22 +155,28 @@ const CustomerPurchase = () => {
   // ===================================
   // ADD GAME TO SELECTION
   // ===================================
-  const handleAddGame = (game) => {
-    const existing = selectedGames.find(g => g.id === game.id);
+  const handleAddGame = (game, priceType) => {
+    const price = priceType === 'hour' 
+      ? parseFloat(game.price_per_hour || 0) 
+      : parseFloat(game.price_per_round || 0);
+    
+    // Create unique identifier with game id and price type
+    const uniqueId = `${game.id}_${priceType}`;
+    const existing = selectedGames.find(g => g.id === uniqueId);
     
     if (existing) {
       // Increase quantity
       setSelectedGames(selectedGames.map(g => 
-        g.id === game.id 
+        g.id === uniqueId 
           ? { ...g, quantity: g.quantity + 1, total: (g.quantity + 1) * g.price }
           : g
       ));
     } else {
       // Add new
-      const price = parseFloat(game.price_per_hour || game.price_per_round || 0);
+      const priceLabel = priceType === 'hour' ? 'per hour' : 'per round';
       setSelectedGames([...selectedGames, {
-        id: game.id,
-        name: game.name,
+        id: uniqueId,
+        name: `${game.name} (${priceLabel})`,
         quantity: 1,
         price: price,
         total: price
@@ -691,25 +697,67 @@ const CustomerPurchase = () => {
 
               {/* Items Grid - Show Games or Products */}
               <div className="items-display-section">
-                <div className="items-grid">
+                <div className={`items-grid ${selectedBox === 'Games' ? 'games-grid' : ''}`}>
                   {selectedBox === 'Games' ? (
                     // Show Games
                     games.length === 0 ? (
                       <p className="no-items">No games available</p>
                     ) : (
-                      games.map(game => (
-                        <div 
-                          key={game.id} 
-                          className="item-card-simple" 
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleAddGame(game);
-                          }}
-                        >
-                          <div className="item-icon">🎮</div>
-                          <div className="item-name">{game.name}</div>
-                        </div>
-                      ))
+                      games.map(game => {
+                        const pricePerHour = parseFloat(game.price_per_hour || 0);
+                        const pricePerRound = parseFloat(game.price_per_round || 0);
+                        
+                        // Skip game if both prices are zero
+                        if (pricePerHour === 0 && pricePerRound === 0) {
+                          return null;
+                        }
+                        
+                        return (
+                          <div 
+                            key={game.id} 
+                            className="game-card-large"
+                          >
+                            <div className="game-card-header">
+                              <div className="game-icon">🎮</div>
+                              <div className="game-name">{game.name}</div>
+                            </div>
+                            <div className="game-card-body">
+                              {pricePerHour > 0 && (
+                                <div className="price-option">
+                                  <div className="price-label">Per Hour</div>
+                                  <div className="price-value">L.L {pricePerHour.toFixed(3)}</div>
+                                  <button 
+                                    type="button"
+                                    className="add-price-btn"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleAddGame(game, 'hour');
+                                    }}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              )}
+                              {pricePerRound > 0 && (
+                                <div className="price-option">
+                                  <div className="price-label">Per Round</div>
+                                  <div className="price-value">L.L {pricePerRound.toFixed(3)}</div>
+                                  <button 
+                                    type="button"
+                                    className="add-price-btn"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleAddGame(game, 'round');
+                                    }}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
                     )
                   ) : (
                     // Show Products from Selected Category
