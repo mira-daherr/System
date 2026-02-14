@@ -20,6 +20,7 @@ const CustomerPurchase = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [categoryProducts, setCategoryProducts] = useState([]);
+  const [selectedBox, setSelectedBox] = useState('Games'); // Track which box is selected
   
   // Selected Items States
   const [selectedGames, setSelectedGames] = useState([]);
@@ -77,6 +78,7 @@ const CustomerPurchase = () => {
   // ===================================
   const handleCategoryClick = async (categoryName) => {
     setSelectedCategory(categoryName);
+    setSelectedBox(categoryName);
     
     try {
       const response = await categoriesAPI.getProductsByCategory(categoryName, token);
@@ -86,6 +88,15 @@ const CustomerPurchase = () => {
       console.error('Error fetching products:', error);
       alert('Error loading products!');
     }
+  };
+
+  // ===================================
+  // HANDLE GAMES BOX CLICK
+  // ===================================
+  const handleGamesClick = () => {
+    setSelectedBox('Games');
+    setSelectedCategory(null);
+    setCategoryProducts([]);
   };
 
   // ===================================
@@ -651,133 +662,99 @@ const CustomerPurchase = () => {
             {/* ========== RIGHT SIDE: Product Selection ========== */}
             <div className="right-panel">
               
-              {/* Games Selection */}
-              <div className="section selection-section">
-                <h2 className="section-title">🎮 Games</h2>
-                <div className="items-grid">
-                  {games.length === 0 ? (
-                    <p className="no-items">No games available</p>
-                  ) : (
-                    games.map(game => (
-                      <div 
-                        key={game.id} 
-                        className="item-card" 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleAddGame(game);
-                        }}
-                      >
-                        <div className="item-icon">🎮</div>
-                        <div className="item-name">{game.name}</div>
-                        <div className="item-description">Gaming session</div>
-                        <div className="item-price">
-                          L.L {parseFloat(game.price_per_hour || game.price_per_round || 0).toFixed(3)}
-                        </div>
-                        <button 
-                          type="button" 
-                          className="add-btn"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleAddGame(game);
-                          }}
-                        >
-                          +
-                        </button>
-                      </div>
-                    ))
-                  )}
+              {/* Selection Boxes - Games + Categories */}
+              <div className="selection-boxes-section">
+                <div className="selection-boxes">
+                  {/* Games Box */}
+                  <div 
+                    className={`selection-box ${selectedBox === 'Games' ? 'active' : ''}`}
+                    onClick={handleGamesClick}
+                  >
+                    <span className="box-icon">🎮</span>
+                    <span className="box-title">Games</span>
+                  </div>
+
+                  {/* Category Boxes */}
+                  {categories.map(cat => (
+                    <div 
+                      key={cat.id}
+                      className={`selection-box ${selectedBox === cat.name ? 'active' : ''}`}
+                      onClick={() => handleCategoryClick(cat.name)}
+                      style={{ borderColor: selectedBox === cat.name ? cat.color : '#ddd' }}
+                    >
+                      <span className="box-icon">{cat.icon}</span>
+                      <span className="box-title">{cat.name}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Products by Category */}
-              <div className="section selection-section">
-                <h2 className="section-title">📦 Products</h2>
-                
-                {/* Categories Grid */}
-                <div className="categories-grid">
-                  {categories.length === 0 ? (
-                    <p className="no-items">No categories available</p>
+              {/* Items Grid - Show Games or Products */}
+              <div className="items-display-section">
+                <div className="items-grid">
+                  {selectedBox === 'Games' ? (
+                    // Show Games
+                    games.length === 0 ? (
+                      <p className="no-items">No games available</p>
+                    ) : (
+                      games.map(game => (
+                        <div 
+                          key={game.id} 
+                          className="item-card-simple" 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleAddGame(game);
+                          }}
+                        >
+                          <div className="item-icon">🎮</div>
+                          <div className="item-name">{game.name}</div>
+                        </div>
+                      ))
+                    )
                   ) : (
-                    categories.map(cat => (
-                      <div 
-                        key={cat.id}
-                        className={`category-card ${selectedCategory === cat.name ? 'active' : ''}`}
-                        onClick={() => handleCategoryClick(cat.name)}
-                        style={{ borderColor: cat.color }}
-                      >
-                        <span className="category-icon">{cat.icon}</span>
-                        <span className="category-name">{cat.name}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                {/* Products in Selected Category */}
-                {selectedCategory && (
-                  <div className="products-section">
-                    <div className="items-grid">
-                      {categoryProducts.length === 0 ? (
-                        <p className="no-items">No products in this category</p>
-                      ) : (
-                        categoryProducts.map(product => (
-                          <div 
-                            key={product.id} 
-                            className="item-card"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleAddProduct(product);
-                            }}
-                          >
-                            {/* Product Image */}
-                            <div className="item-icon">
-                              {product.image ? (
-                                <img 
-                                  src={product.image} 
-                                  alt={product.name}
-                                  className="product-image"
-                                  onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.nextElementSibling.style.display = 'block';
-                                  }}
-                                />
-                              ) : null}
-                              <div 
-                                className="product-emoji"
-                                style={{
-                                  display: product.image ? 'none' : 'block'
+                    // Show Products from Selected Category
+                    categoryProducts.length === 0 ? (
+                      <p className="no-items">No products in this category</p>
+                    ) : (
+                      categoryProducts.map(product => (
+                        <div 
+                          key={product.id} 
+                          className="item-card-simple"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleAddProduct(product);
+                          }}
+                        >
+                          {/* Product Image */}
+                          <div className="item-icon">
+                            {product.image ? (
+                              <img 
+                                src={product.image} 
+                                alt={product.name}
+                                className="product-image"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextElementSibling.style.display = 'block';
                                 }}
-                              >
-                                🛒
-                              </div>
-                            </div>
-
-                            {/* Product Name */}
-                            <div className="item-name">{product.name}</div>
-
-                            {/* Product Price */}
-                            <div className="item-price">
-                              L.L {parseFloat(product.price || 0).toFixed(3)}
-                            </div>
-
-                            {/* Add Button */}
-                            <button 
-                              type="button" 
-                              className="add-btn"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleAddProduct(product);
+                              />
+                            ) : null}
+                            <div 
+                              className="product-emoji"
+                              style={{
+                                display: product.image ? 'none' : 'block'
                               }}
                             >
-                              +
-                            </button>
+                              🛒
+                            </div>
                           </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
+
+                          {/* Product Name */}
+                          <div className="item-name">{product.name}</div>
+                        </div>
+                      ))
+                    )
+                  )}
+                </div>
               </div>
               
             </div>
