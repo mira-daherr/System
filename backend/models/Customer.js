@@ -3,21 +3,12 @@ const db = require('../config/db');
 class Customer {
   // Create new customer
   static async create(customerData) {
-    const { name, phone, address, total_debt } = customerData;
+    const { name, total_debt } = customerData;
     const [result] = await db.query(
-      'INSERT INTO customers (name, phone, address, total_debt) VALUES (?, ?, ?, ?)',
-      [name, phone, address, total_debt || 0]
+      'INSERT INTO customers (name, total_debt) VALUES (?, ?)',
+      [name, total_debt || 0]
     );
     return result.insertId;
-  }
-
-  // Find customer by phone
-  static async findByPhone(phone) {
-    const [rows] = await db.query(
-      'SELECT * FROM customers WHERE phone = ?',
-      [phone]
-    );
-    return rows[0];
   }
 
   // Find customer by ID

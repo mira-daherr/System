@@ -26,8 +26,7 @@ class Sale {
     const [rows] = await db.query(`
       SELECT 
         s.*,
-        c.name as customer_name,
-        c.phone
+        c.name as customer_name
       FROM sales s
       LEFT JOIN customers c ON s.customer_id = c.id
       WHERE s.is_deleted = 0

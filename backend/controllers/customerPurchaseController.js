@@ -7,9 +7,7 @@ const db = require('../config/db');
 // ===================================
 exports.createPurchase = async (req, res) => {
   const { 
-    customerName, 
-    phone, 
-    address,
+    customerName,
     selectedGames,
     selectedProducts,
     totalAmount,
@@ -23,23 +21,11 @@ exports.createPurchase = async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    // 1. Check if customer exists or create new
-    let customer = await Customer.findByPhone(phone);
-    let customerId;
-    
-    if (customer) {
-      // Customer exists - update debt
-      customerId = customer.id;
-      await Customer.updateDebt(customerId, remainingAmount);
-    } else {
-      // Create new customer
-      customerId = await Customer.create({
-        name: customerName,
-        phone,
-        address,
-        total_debt: remainingAmount
-      });
-    }
+    // 1. Create new customer record
+    const customerId = await Customer.create({
+      name: customerName,
+      total_debt: remainingAmount
+    });
 
     // 2. Create sale record
     const saleId = await Sale.create({

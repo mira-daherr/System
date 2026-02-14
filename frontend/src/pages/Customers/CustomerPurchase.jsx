@@ -8,8 +8,6 @@ const CustomerPurchase = () => {
 
   // Customer Info States
   const [customerName, setCustomerName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
   
   // Available Items States
   const [games, setGames] = useState([]);
@@ -183,11 +181,6 @@ const CustomerPurchase = () => {
       return;
     }
     
-    if (!phone.trim()) {
-      alert('Please enter phone number!');
-      return;
-    }
-    
     if (selectedGames.length === 0 && selectedProducts.length === 0) {
       alert('Please select at least one game or product!');
       return;
@@ -198,8 +191,6 @@ const CustomerPurchase = () => {
     try {
       const purchaseData = {
         customerName: customerName.trim(),
-        phone: phone.trim(),
-        address: address.trim(),
         selectedGames,
         selectedProducts,
         totalAmount,
@@ -218,9 +209,9 @@ const CustomerPurchase = () => {
           '✅ Purchase saved successfully!\n\n' +
           'Sale ID: ' + response.data.saleId + '\n' +
           'Customer: ' + customerName + '\n' +
-          'Total: L.L ' + totalAmount.toFixed(2) + '\n' +
-          'Paid: L.L ' + paidAmount.toFixed(2) + '\n' +
-          'Remaining: L.L ' + remainingAmount.toFixed(2) + '\n\n' +
+          'Total: L.L ' + totalAmount.toFixed(3) + '\n' +
+          'Paid: L.L ' + paidAmount.toFixed(3) + '\n' +
+          'Remaining: L.L ' + remainingAmount.toFixed(3) + '\n\n' +
           'Click OK to add another purchase\n' +
           'Click Cancel to go back'
         );
@@ -228,8 +219,6 @@ const CustomerPurchase = () => {
         if (continueAdding) {
           // Reset form للفاتورة الجديدة
           setCustomerName('');
-          setPhone('');
-          setAddress('');
           setSelectedGames([]);
           setSelectedProducts([]);
           setPaidAmount(0);
@@ -278,25 +267,6 @@ const CustomerPurchase = () => {
                   required
                 />
               </div>
-              <div className="form-group">
-                <label>Phone *</label>
-                <input 
-                  type="tel" 
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="07xxxxxxxx"
-                  required
-                />
-              </div>
-              <div className="form-group full-width">
-                <label>Address (Optional)</label>
-                <input 
-                  type="text" 
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Address"
-                />
-              </div>
             </div>
           </div>
 
@@ -320,7 +290,7 @@ const CustomerPurchase = () => {
                     <div className="item-name">{game.name}</div>
                     <div className="item-description">Gaming session</div>
                     <div className="item-price">
-                      L.L {parseFloat(game.price_per_hour || game.price_per_round || 0).toFixed(2)}
+                      L.L {parseFloat(game.price_per_hour || game.price_per_round || 0).toFixed(3)}
                     </div>
                     <button 
                       type="button" 
@@ -344,7 +314,7 @@ const CustomerPurchase = () => {
                 {selectedGames.map(game => (
                   <div key={game.id} className="selected-item">
                     <span>• {game.name} ({game.quantity || 0}h)</span>
-                    <span>L.L {(parseFloat(game.total) || 0).toFixed(2)}</span>
+                    <span>L.L {(parseFloat(game.total) || 0).toFixed(3)}</span>
                     <div className="item-actions">
                       <button 
                         type="button" 
@@ -377,7 +347,7 @@ const CustomerPurchase = () => {
                     </div>
                   </div>
                 ))}
-                <div className="subtotal">Games Total: L.L {gamesTotal.toFixed(2)}</div>
+                <div className="subtotal">Games Total: L.L {gamesTotal.toFixed(3)}</div>
               </div>
             )}
           </div>
@@ -452,7 +422,7 @@ const CustomerPurchase = () => {
 
                         {/* Product Price */}
                         <div className="item-price">
-                          L.L {parseFloat(product.price || 0).toFixed(2)}
+                          L.L {parseFloat(product.price || 0).toFixed(3)}
                         </div>
 
                         {/* Add Button */}
@@ -481,7 +451,7 @@ const CustomerPurchase = () => {
                 {selectedProducts.map(product => (
                   <div key={product.id} className="selected-item">
                     <span>• {product.name} ({product.quantity || 0})</span>
-                    <span>L.L {(parseFloat(product.total) || 0).toFixed(2)}</span>
+                    <span>L.L {(parseFloat(product.total) || 0).toFixed(3)}</span>
                     <div className="item-actions">
                       <button 
                         type="button" 
@@ -514,7 +484,7 @@ const CustomerPurchase = () => {
                     </div>
                   </div>
                 ))}
-                <div className="subtotal">Products Total: L.L {productsTotal.toFixed(2)}</div>
+                <div className="subtotal">Products Total: L.L {productsTotal.toFixed(3)}</div>
               </div>
             )}
           </div>
@@ -525,15 +495,15 @@ const CustomerPurchase = () => {
             
             <div className="summary-row">
               <span>Games Total:</span>
-              <span>L.L {gamesTotal.toFixed(2)}</span>
+              <span>L.L {gamesTotal.toFixed(3)}</span>
             </div>
             <div className="summary-row">
               <span>Products Total:</span>
-              <span>L.L {productsTotal.toFixed(2)}</span>
+              <span>L.L {productsTotal.toFixed(3)}</span>
             </div>
             <div className="summary-row total">
               <span>Total Amount:</span>
-              <span>L.L {totalAmount.toFixed(2)}</span>
+              <span>L.L {totalAmount.toFixed(3)}</span>
             </div>
             
             <div className="form-group" style={{marginTop: '20px'}}>
@@ -542,8 +512,8 @@ const CustomerPurchase = () => {
                 type="number" 
                 value={paidAmount}
                 onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
-                placeholder="0.00"
-                step="0.01"
+                placeholder="0.000"
+                step="0.001"
                 min="0"
               />
               <div className="quick-buttons">
@@ -570,7 +540,7 @@ const CustomerPurchase = () => {
 
             <div className={`summary-row debt ${remainingAmount > 0 ? 'has-debt' : ''}`}>
               <span>Remaining Debt:</span>
-              <span>L.L {remainingAmount.toFixed(2)}</span>
+              <span>L.L {remainingAmount.toFixed(3)}</span>
             </div>
           </div>
 
