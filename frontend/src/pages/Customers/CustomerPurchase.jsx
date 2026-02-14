@@ -8,6 +8,11 @@ const CustomerPurchase = () => {
 
   // Customer Info States
   const [customerName, setCustomerName] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [customerSuggestions, setCustomerSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [customerHistory, setCustomerHistory] = useState([]);
   
   // Available Items States
   const [games, setGames] = useState([]);
@@ -73,6 +78,59 @@ const CustomerPurchase = () => {
       console.error('Error fetching products:', error);
       alert('Error loading products!');
     }
+  };
+
+  // ===================================
+  // SEARCH CUSTOMERS
+  // ===================================
+  const handleCustomerSearch = async (searchTerm) => {
+    setCustomerSearch(searchTerm);
+    setCustomerName(searchTerm);
+    
+    if (searchTerm.length < 2) {
+      setCustomerSuggestions([]);
+      setShowSuggestions(false);
+      setSelectedCustomer(null);
+      setCustomerHistory([]);
+      return;
+    }
+    
+    try {
+      const response = await customerPurchasesAPI.searchCustomers(searchTerm, token);
+      setCustomerSuggestions(response.data || []);
+      setShowSuggestions(true);
+    } catch (error) {
+      console.error('Error searching customers:', error);
+    }
+  };
+
+  // ===================================
+  // SELECT CUSTOMER
+  // ===================================
+  const handleSelectCustomer = async (customer) => {
+    setSelectedCustomer(customer);
+    setCustomerName(customer.name);
+    setCustomerSearch(customer.name);
+    setShowSuggestions(false);
+    
+    // Fetch customer's purchase history
+    try {
+      const response = await customerPurchasesAPI.getCustomerById(customer.id, token);
+      setCustomerHistory(response.data.sales || []);
+    } catch (error) {
+      console.error('Error fetching customer history:', error);
+    }
+  };
+
+  // ===================================
+  // CLEAR CUSTOMER SELECTION
+  // ===================================
+  const handleClearCustomer = () => {
+    setSelectedCustomer(null);
+    setCustomerName('');
+    setCustomerSearch('');
+    setCustomerHistory([]);
+    setShowSuggestions(false);
   };
 
   // ===================================
@@ -166,7 +224,9 @@ const CustomerPurchase = () => {
   // ===================================
   const gamesTotal = selectedGames.reduce((sum, g) => sum + (parseFloat(g.total) || 0), 0);
   const productsTotal = selectedProducts.reduce((sum, p) => sum + (parseFloat(p.total) || 0), 0);
-  const totalAmount = gamesTotal + productsTotal;
+  const currentPurchaseTotal = gamesTotal + productsTotal;
+  const existingDebt = selectedCustomer ? parseFloat(selectedCustomer.total_debt) || 0 : 0;
+  const totalAmount = currentPurchaseTotal + existingDebt;
   const remainingAmount = totalAmount - paidAmount;
 
   // ===================================
@@ -190,12 +250,13 @@ const CustomerPurchase = () => {
 
     try {
       const purchaseData = {
+        customerId: selectedCustomer?.id || null,
         customerName: customerName.trim(),
         selectedGames,
         selectedProducts,
-        totalAmount,
+        totalAmount: currentPurchaseTotal,
         paidAmount,
-        remainingAmount,
+        remainingAmount: currentPurchaseTotal - paidAmount,
         notes: ''
       };
 
@@ -205,13 +266,30 @@ const CustomerPurchase = () => {
 
       if (response.success) {
         // ✨ التعديل الجديد هنا
-        const continueAdding = window.confirm(
-          '✅ Purchase saved successfully!\n\n'
-        );
+        const customerType = selectedCustomer ? 'Existing Customer' : 'New Customer';
+        let message = '✅ Purchase saved successfully!\n\n' +
+          'Customer: ' + customerName + ' (' + customerType + ')\n' +
+          'Sale ID: ' + response.data.saleId + '\n';
+        
+        if (selectedCustomer && existingDebt > 0) {
+          message += 'Previous Debt: L.L ' + existingDebt.toFixed(3) + '\n';
+        }
+        
+        message += 'New Items: L.L ' + currentPurchaseTotal.toFixed(3) + '\n' +
+          'Grand Total: L.L ' + totalAmount.toFixed(3) + '\n' +
+          'Paid: L.L ' + paidAmount.toFixed(3) + '\n' +
+          'Remaining: L.L ' + remainingAmount.toFixed(3) + '\n\n' +
+          'Click OK to add another purchase\n' +
+          'Click Cancel to go back';
+        
+        const continueAdding = window.confirm(message);
         
         if (continueAdding) {
           // Reset form للفاتورة الجديدة
           setCustomerName('');
+          setCustomerSearch('');
+          setSelectedCustomer(null);
+          setCustomerHistory([]);
           setSelectedGames([]);
           setSelectedProducts([]);
           setPaidAmount(0);
@@ -255,15 +333,89 @@ const CustomerPurchase = () => {
                 <h2 className="section-title">👤 Customer</h2>
                 <div className="form-group">
                   <label>Name *</label>
-                  <input 
-                    type="text" 
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="Enter customer name"
-                    required
-                  />
+                  <div className="customer-search-wrapper">
+                    <input 
+                      type="text" 
+                      value={customerSearch}
+                      onChange={(e) => handleCustomerSearch(e.target.value)}
+                      onFocus={() => customerSuggestions.length > 0 && setShowSuggestions(true)}
+                      placeholder="Search or enter customer name"
+                      required
+                    />
+                    {selectedCustomer && (
+                      <button
+                        type="button"
+                        className="clear-customer-btn"
+                        onClick={handleClearCustomer}
+                        title="Clear customer"
+                      >
+                        ×
+                      </button>
+                    )}
+                    
+                    {/* Customer Suggestions Dropdown */}
+                    {showSuggestions && customerSuggestions.length > 0 && (
+                      <div className="customer-suggestions">
+                        {customerSuggestions.map(customer => (
+                          <div
+                            key={customer.id}
+                            className="suggestion-item"
+                            onClick={() => handleSelectCustomer(customer)}
+                          >
+                            <div className="suggestion-name">{customer.name}</div>
+                            <div className="suggestion-debt">
+                              Debt: L.L {(parseFloat(customer.total_debt) || 0).toFixed(3)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Selected Customer Info */}
+                  {selectedCustomer && (
+                    <div className="selected-customer-info">
+                      <div className="customer-badge">
+                        <span>✓ Existing Customer</span>
+                        <span className="customer-debt">
+                          Total Debt: L.L {(parseFloat(selectedCustomer.total_debt) || 0).toFixed(3)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Customer Purchase History */}
+              {selectedCustomer && customerHistory.length > 0 && (
+                <div className="section history-section">
+                  <h2 className="section-title">📋 Purchase History</h2>
+                  <div className="history-list">
+                    {customerHistory.slice(0, 3).map(purchase => {
+                      // Use created_at if sale_date is invalid
+                      const dateToShow = purchase.sale_date && purchase.sale_date !== '0000-00-00 00:00:00' 
+                        ? new Date(purchase.sale_date) 
+                        : new Date(purchase.created_at);
+                      
+                      return (
+                        <div key={purchase.id} className="history-item">
+                          <div className="history-date">
+                            {dateToShow.toLocaleDateString()}
+                          </div>
+                          <div className="history-amount">
+                            L.L {(parseFloat(purchase.total_amount) || 0).toFixed(3)}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {customerHistory.length > 3 && (
+                      <div className="history-more">
+                        +{customerHistory.length - 3} more purchases
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Selected Items Display */}
               {(selectedGames.length > 0 || selectedProducts.length > 0) && (
@@ -374,6 +526,13 @@ const CustomerPurchase = () => {
               <div className="section summary-section">
                 <h2 className="section-title">💰 Payment</h2>
                 
+                {selectedCustomer && existingDebt > 0 && (
+                  <div className="summary-row existing-debt">
+                    <span>Previous Debt:</span>
+                    <span>L.L {existingDebt.toFixed(3)}</span>
+                  </div>
+                )}
+                
                 <div className="summary-row">
                   <span>Games:</span>
                   <span>L.L {gamesTotal.toFixed(3)}</span>
@@ -382,8 +541,12 @@ const CustomerPurchase = () => {
                   <span>Products:</span>
                   <span>L.L {productsTotal.toFixed(3)}</span>
                 </div>
+                <div className="summary-row">
+                  <span>New Items Total:</span>
+                  <span>L.L {currentPurchaseTotal.toFixed(3)}</span>
+                </div>
                 <div className="summary-row total">
-                  <span>Total:</span>
+                  <span>Grand Total:</span>
                   <span>L.L {totalAmount.toFixed(3)}</span>
                 </div>
                 
@@ -405,8 +568,19 @@ const CustomerPurchase = () => {
                         setPaidAmount(totalAmount);
                       }}
                     >
-                      Pay Full
+                      Pay All
                     </button>
+                    {selectedCustomer && existingDebt > 0 && (
+                      <button 
+                        type="button" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setPaidAmount(currentPurchaseTotal);
+                        }}
+                      >
+                        Pay New Only
+                      </button>
+                    )}
                     <button 
                       type="button" 
                       onClick={(e) => {

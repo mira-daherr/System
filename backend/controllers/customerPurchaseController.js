@@ -7,6 +7,7 @@ const db = require('../config/db');
 // ===================================
 exports.createPurchase = async (req, res) => {
   const { 
+    customerId: existingCustomerId,
     customerName,
     selectedGames,
     selectedProducts,
@@ -21,11 +22,27 @@ exports.createPurchase = async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    // 1. Create new customer record
-    const customerId = await Customer.create({
-      name: customerName,
-      total_debt: remainingAmount
-    });
+    let customerId;
+    
+    // 1. Handle customer (existing or new)
+    if (existingCustomerId) {
+      // Use existing customer and update their debt
+      customerId = existingCustomerId;
+      await Customer.updateDebt(customerId, remainingAmount);
+    } else {
+      // Check if customer with this name already exists
+      const existingCustomer = await Customer.findByName(customerName);
+      if (existingCustomer) {
+        customerId = existingCustomer.id;
+        await Customer.updateDebt(customerId, remainingAmount);
+      } else {
+        // Create new customer
+        customerId = await Customer.create({
+          name: customerName,
+          total_debt: remainingAmount
+        });
+      }
+    }
 
     // 2. Create sale record
     const saleId = await Sale.create({
@@ -160,6 +177,36 @@ exports.getAllCustomers = async (req, res) => {
     res.status(500).json({ 
       success: false, 
       message: 'Error fetching customers',
+      error: error.message 
+    });
+  }
+};
+
+// ===================================
+// SEARCH customers by name
+// ===================================
+exports.searchCustomers = async (req, res) => {
+  try {
+    const { search } = req.query;
+    
+    if (!search) {
+      const customers = await Customer.getAll();
+      return res.json({ 
+        success: true, 
+        data: customers 
+      });
+    }
+    
+    const customers = await Customer.searchByName(search);
+    res.json({ 
+      success: true, 
+      data: customers 
+    });
+  } catch (error) {
+    console.error('Error searching customers:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error searching customers',
       error: error.message 
     });
   }

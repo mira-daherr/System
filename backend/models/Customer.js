@@ -20,6 +20,24 @@ class Customer {
     return rows[0];
   }
 
+  // Find customer by name (case insensitive)
+  static async findByName(name) {
+    const [rows] = await db.query(
+      'SELECT * FROM customers WHERE LOWER(name) = LOWER(?)',
+      [name]
+    );
+    return rows[0];
+  }
+
+  // Search customers by name (partial match)
+  static async searchByName(searchTerm) {
+    const [rows] = await db.query(
+      'SELECT * FROM customers WHERE name LIKE ? ORDER BY created_at DESC',
+      [`%${searchTerm}%`]
+    );
+    return rows;
+  }
+
   // Get all customers
   static async getAll() {
     const [rows] = await db.query(

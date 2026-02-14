@@ -539,6 +539,19 @@ export const customerPurchasesAPI = {
   // CUSTOMERS
   // ===================================
 
+  // SEARCH customers by name
+  searchCustomers: async (searchTerm, token) => {
+    try {
+      const response = await api.get('/api/customer-purchases/customers/search', {
+        params: { search: searchTerm },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
   // GET all customers
   getAllCustomers: async (token) => {
     try {

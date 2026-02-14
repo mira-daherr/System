@@ -26,6 +26,9 @@ router.delete('/purchase/:id', customerPurchaseController.deletePurchase);
 // CUSTOMER ROUTES
 // ===================================
 
+// SEARCH customers by name
+router.get('/customers/search', customerPurchaseController.searchCustomers);
+
 // GET all customers
 router.get('/customers', customerPurchaseController.getAllCustomers);
 

@@ -21,7 +21,7 @@ class Sale {
     return result.insertId;
   }
 
-  // Get all sales (not deleted)
+  // Get all sales
   static async getAll() {
     const [rows] = await db.query(`
       SELECT 
@@ -29,7 +29,6 @@ class Sale {
         c.name as customer_name
       FROM sales s
       LEFT JOIN customers c ON s.customer_id = c.id
-      WHERE s.is_deleted = 0
       ORDER BY s.sale_date DESC
     `);
     return rows;
@@ -38,7 +37,7 @@ class Sale {
   // Get sale by ID
   static async findById(id) {
     const [rows] = await db.query(
-      'SELECT * FROM sales WHERE id = ? AND is_deleted = 0',
+      'SELECT * FROM sales WHERE id = ?',
       [id]
     );
     return rows[0];
@@ -47,16 +46,16 @@ class Sale {
   // Get sales by customer ID
   static async getByCustomerId(customerId) {
     const [rows] = await db.query(
-      'SELECT * FROM sales WHERE customer_id = ? AND is_deleted = 0 ORDER BY sale_date DESC',
+      'SELECT * FROM sales WHERE customer_id = ? ORDER BY sale_date DESC',
       [customerId]
     );
     return rows;
   }
 
-  // Soft delete sale
+  // Delete sale (hard delete)
   static async delete(id) {
     await db.query(
-      'UPDATE sales SET is_deleted = 1 WHERE id = ?',
+      'DELETE FROM sales WHERE id = ?',
       [id]
     );
   }
