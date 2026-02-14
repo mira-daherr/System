@@ -206,14 +206,7 @@ const CustomerPurchase = () => {
       if (response.success) {
         // ✨ التعديل الجديد هنا
         const continueAdding = window.confirm(
-          '✅ Purchase saved successfully!\n\n' +
-          'Sale ID: ' + response.data.saleId + '\n' +
-          'Customer: ' + customerName + '\n' +
-          'Total: L.L ' + totalAmount.toFixed(3) + '\n' +
-          'Paid: L.L ' + paidAmount.toFixed(3) + '\n' +
-          'Remaining: L.L ' + remainingAmount.toFixed(3) + '\n\n' +
-          'Click OK to add another purchase\n' +
-          'Click Cancel to go back'
+          '✅ Purchase saved successfully!\n\n'
         );
         
         if (continueAdding) {
@@ -253,186 +246,238 @@ const CustomerPurchase = () => {
       <div className="container">
         <form onSubmit={handleSubmit}>
           
-          {/* ========== CUSTOMER INFORMATION ========== */}
-          <div className="section">
-            <h2 className="section-title">1️⃣ Customer Information</h2>
-            <div className="form-grid">
-              <div className="form-group">
-                <label>Name *</label>
-                <input 
-                  type="text" 
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Customer name"
-                  required
-                />
+          <div className="layout-split">
+            {/* ========== LEFT SIDE: Customer Info & Cart ========== */}
+            <div className="left-panel">
+              
+              {/* Customer Information */}
+              <div className="section customer-info-section">
+                <h2 className="section-title">👤 Customer</h2>
+                <div className="form-group">
+                  <label>Name *</label>
+                  <input 
+                    type="text" 
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Enter customer name"
+                    required
+                  />
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* ========== GAMES SELECTION ========== */}
-          <div className="section">
-            <h2 className="section-title">2️⃣ Select Games</h2>
-            <div className="items-grid">
-              {games.length === 0 ? (
-                <p className="no-items">No games available</p>
-              ) : (
-                games.map(game => (
-                  <div 
-                    key={game.id} 
-                    className="item-card" 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleAddGame(game);
-                    }}
-                  >
-                    <div className="item-icon">🎮</div>
-                    <div className="item-name">{game.name}</div>
-                    <div className="item-description">Gaming session</div>
-                    <div className="item-price">
-                      L.L {parseFloat(game.price_per_hour || game.price_per_round || 0).toFixed(3)}
-                    </div>
-                    <button 
-                      type="button" 
-                      className="add-btn"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleAddGame(game);
-                      }}
-                    >
-                      +
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {selectedGames.length > 0 && (
-              <div className="selected-items">
-                <h3>Selected Games:</h3>
-                {selectedGames.map(game => (
-                  <div key={game.id} className="selected-item">
-                    <span>• {game.name} ({game.quantity || 0}h)</span>
-                    <span>L.L {(parseFloat(game.total) || 0).toFixed(3)}</span>
-                    <div className="item-actions">
-                      <button 
-                        type="button" 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          updateQuantity('game', game.id, -1);
-                        }}
-                      >
-                        -
-                      </button>
-                      <span>{game.quantity || 0}</span>
-                      <button 
-                        type="button" 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          updateQuantity('game', game.id, 1);
-                        }}
-                      >
-                        +
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          removeItem('game', game.id);
-                        }}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                <div className="subtotal">Games Total: L.L {gamesTotal.toFixed(3)}</div>
-              </div>
-            )}
-          </div>
-
-          {/* ========== PRODUCTS BY CATEGORY ========== */}
-          <div className="section">
-            <h2 className="section-title">3️⃣ Select Products</h2>
-            
-            {/* Categories Grid */}
-            <div className="categories-grid">
-              {categories.length === 0 ? (
-                <p className="no-items">No categories available</p>
-              ) : (
-                categories.map(cat => (
-                  <div 
-                    key={cat.id}
-                    className={`category-card ${selectedCategory === cat.name ? 'active' : ''}`}
-                    onClick={() => handleCategoryClick(cat.name)}
-                    style={{ borderColor: cat.color }}
-                  >
-                    <span className="category-icon">{cat.icon}</span>
-                    <span className="category-name">{cat.name}</span>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Products in Selected Category */}
-            {selectedCategory && (
-              <div className="products-section">
-                <h3 style={{ marginTop: '20px', marginBottom: '15px' }}>
-                  📦 {selectedCategory}
-                </h3>
-                <div className="items-grid">
-                  {categoryProducts.length === 0 ? (
-                    <p className="no-items">No products in this category</p>
-                  ) : (
-                    categoryProducts.map(product => (
-                      <div 
-                        key={product.id} 
-                        className="item-card"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleAddProduct(product);
-                        }}
-                      >
-                        {/* Product Image */}
-                        <div className="item-icon">
-                          {product.image ? (
-                            <img 
-                              src={product.image} 
-                              alt={product.name}
-                              className="product-image"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                                e.target.nextElementSibling.style.display = 'block';
-                              }}
-                            />
-                          ) : null}
-                          <div 
-                            className="product-emoji"
-                            style={{
-                              display: product.image ? 'none' : 'block'
-                            }}
-                          >
-                            🛒
+              {/* Selected Items Display */}
+              {(selectedGames.length > 0 || selectedProducts.length > 0) && (
+                <div className="section cart-section">
+                  <h2 className="section-title">🛒 Cart</h2>
+                  
+                  {selectedGames.length > 0 && (
+                    <div className="cart-items">
+                      <h4 className="cart-category">Games:</h4>
+                      {selectedGames.map(game => (
+                        <div key={game.id} className="cart-item">
+                          <div className="cart-item-info">
+                            <span className="cart-item-name">{game.name}</span>
+                            <span className="cart-item-qty">×{game.quantity}</span>
+                          </div>
+                          <div className="cart-item-actions">
+                            <span className="cart-item-price">L.L {(parseFloat(game.total) || 0).toFixed(3)}</span>
+                            <div className="cart-item-controls">
+                              <button 
+                                type="button" 
+                                className="qty-btn"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  updateQuantity('game', game.id, -1);
+                                }}
+                              >
+                                -
+                              </button>
+                              <button 
+                                type="button" 
+                                className="qty-btn"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  updateQuantity('game', game.id, 1);
+                                }}
+                              >
+                                +
+                              </button>
+                              <button 
+                                type="button" 
+                                className="remove-btn"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  removeItem('game', game.id);
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
                           </div>
                         </div>
-
-                        {/* Product Name */}
-                        <div className="item-name">{product.name}</div>
-
-                        {/* Product Price */}
-                        <div className="item-price">
-                          L.L {parseFloat(product.price || 0).toFixed(3)}
+                      ))}
+                    </div>
+                  )}
+                  
+                  {selectedProducts.length > 0 && (
+                    <div className="cart-items">
+                      <h4 className="cart-category">Products:</h4>
+                      {selectedProducts.map(product => (
+                        <div key={product.id} className="cart-item">
+                          <div className="cart-item-info">
+                            <span className="cart-item-name">{product.name}</span>
+                            <span className="cart-item-qty">×{product.quantity}</span>
+                          </div>
+                          <div className="cart-item-actions">
+                            <span className="cart-item-price">L.L {(parseFloat(product.total) || 0).toFixed(3)}</span>
+                            <div className="cart-item-controls">
+                              <button 
+                                type="button" 
+                                className="qty-btn"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  updateQuantity('product', product.id, -1);
+                                }}
+                              >
+                                -
+                              </button>
+                              <button 
+                                type="button" 
+                                className="qty-btn"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  updateQuantity('product', product.id, 1);
+                                }}
+                              >
+                                +
+                              </button>
+                              <button 
+                                type="button" 
+                                className="remove-btn"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  removeItem('product', product.id);
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          </div>
                         </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
-                        {/* Add Button */}
+              {/* Payment Summary */}
+              <div className="section summary-section">
+                <h2 className="section-title">💰 Payment</h2>
+                
+                <div className="summary-row">
+                  <span>Games:</span>
+                  <span>L.L {gamesTotal.toFixed(3)}</span>
+                </div>
+                <div className="summary-row">
+                  <span>Products:</span>
+                  <span>L.L {productsTotal.toFixed(3)}</span>
+                </div>
+                <div className="summary-row total">
+                  <span>Total:</span>
+                  <span>L.L {totalAmount.toFixed(3)}</span>
+                </div>
+                
+                <div className="form-group" style={{marginTop: '20px'}}>
+                  <label>Amount Paid:</label>
+                  <input 
+                    type="number" 
+                    value={paidAmount}
+                    onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
+                    placeholder="0.000"
+                    step="0.001"
+                    min="0"
+                  />
+                  <div className="quick-buttons">
+                    <button 
+                      type="button" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPaidAmount(totalAmount);
+                      }}
+                    >
+                      Pay Full
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPaidAmount(0);
+                      }}
+                    >
+                      Pay Later
+                    </button>
+                  </div>
+                </div>
+
+                <div className={`summary-row debt ${remainingAmount > 0 ? 'has-debt' : ''}`}>
+                  <span>Remaining:</span>
+                  <span>L.L {remainingAmount.toFixed(3)}</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="btn-container">
+                <button 
+                  type="button" 
+                  className="btn-cancel" 
+                  onClick={() => window.history.back()}
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn-save"
+                  disabled={loading}
+                >
+                  {loading ? 'Saving...' : '💾 Save'}
+                </button>
+              </div>
+              
+            </div>
+
+            {/* ========== RIGHT SIDE: Product Selection ========== */}
+            <div className="right-panel">
+              
+              {/* Games Selection */}
+              <div className="section selection-section">
+                <h2 className="section-title">🎮 Games</h2>
+                <div className="items-grid">
+                  {games.length === 0 ? (
+                    <p className="no-items">No games available</p>
+                  ) : (
+                    games.map(game => (
+                      <div 
+                        key={game.id} 
+                        className="item-card" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAddGame(game);
+                        }}
+                      >
+                        <div className="item-icon">🎮</div>
+                        <div className="item-name">{game.name}</div>
+                        <div className="item-description">Gaming session</div>
+                        <div className="item-price">
+                          L.L {parseFloat(game.price_per_hour || game.price_per_round || 0).toFixed(3)}
+                        </div>
                         <button 
                           type="button" 
                           className="add-btn"
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            handleAddProduct(product);
+                            handleAddGame(game);
                           }}
                         >
                           +
@@ -442,125 +487,98 @@ const CustomerPurchase = () => {
                   )}
                 </div>
               </div>
-            )}
 
-            {/* Selected Products Display */}
-            {selectedProducts.length > 0 && (
-              <div className="selected-items">
-                <h3>Selected Products:</h3>
-                {selectedProducts.map(product => (
-                  <div key={product.id} className="selected-item">
-                    <span>• {product.name} ({product.quantity || 0})</span>
-                    <span>L.L {(parseFloat(product.total) || 0).toFixed(3)}</span>
-                    <div className="item-actions">
-                      <button 
-                        type="button" 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          updateQuantity('product', product.id, -1);
-                        }}
+              {/* Products by Category */}
+              <div className="section selection-section">
+                <h2 className="section-title">📦 Products</h2>
+                
+                {/* Categories Grid */}
+                <div className="categories-grid">
+                  {categories.length === 0 ? (
+                    <p className="no-items">No categories available</p>
+                  ) : (
+                    categories.map(cat => (
+                      <div 
+                        key={cat.id}
+                        className={`category-card ${selectedCategory === cat.name ? 'active' : ''}`}
+                        onClick={() => handleCategoryClick(cat.name)}
+                        style={{ borderColor: cat.color }}
                       >
-                        -
-                      </button>
-                      <span>{product.quantity || 0}</span>
-                      <button 
-                        type="button" 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          updateQuantity('product', product.id, 1);
-                        }}
-                      >
-                        +
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          removeItem('product', product.id);
-                        }}
-                      >
-                        ×
-                      </button>
+                        <span className="category-icon">{cat.icon}</span>
+                        <span className="category-name">{cat.name}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Products in Selected Category */}
+                {selectedCategory && (
+                  <div className="products-section">
+                    <div className="items-grid">
+                      {categoryProducts.length === 0 ? (
+                        <p className="no-items">No products in this category</p>
+                      ) : (
+                        categoryProducts.map(product => (
+                          <div 
+                            key={product.id} 
+                            className="item-card"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleAddProduct(product);
+                            }}
+                          >
+                            {/* Product Image */}
+                            <div className="item-icon">
+                              {product.image ? (
+                                <img 
+                                  src={product.image} 
+                                  alt={product.name}
+                                  className="product-image"
+                                  onError={(e) => {
+                                    e.target.style.display = 'none';
+                                    e.target.nextElementSibling.style.display = 'block';
+                                  }}
+                                />
+                              ) : null}
+                              <div 
+                                className="product-emoji"
+                                style={{
+                                  display: product.image ? 'none' : 'block'
+                                }}
+                              >
+                                🛒
+                              </div>
+                            </div>
+
+                            {/* Product Name */}
+                            <div className="item-name">{product.name}</div>
+
+                            {/* Product Price */}
+                            <div className="item-price">
+                              L.L {parseFloat(product.price || 0).toFixed(3)}
+                            </div>
+
+                            {/* Add Button */}
+                            <button 
+                              type="button" 
+                              className="add-btn"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleAddProduct(product);
+                              }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
-                ))}
-                <div className="subtotal">Products Total: L.L {productsTotal.toFixed(3)}</div>
+                )}
               </div>
-            )}
-          </div>
-
-          {/* ========== PAYMENT SUMMARY ========== */}
-          <div className="section summary-section">
-            <h2 className="section-title">4️⃣ Payment Summary</h2>
-            
-            <div className="summary-row">
-              <span>Games Total:</span>
-              <span>L.L {gamesTotal.toFixed(3)}</span>
+              
             </div>
-            <div className="summary-row">
-              <span>Products Total:</span>
-              <span>L.L {productsTotal.toFixed(3)}</span>
-            </div>
-            <div className="summary-row total">
-              <span>Total Amount:</span>
-              <span>L.L {totalAmount.toFixed(3)}</span>
-            </div>
-            
-            <div className="form-group" style={{marginTop: '20px'}}>
-              <label>Amount Paid:</label>
-              <input 
-                type="number" 
-                value={paidAmount}
-                onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
-                placeholder="0.000"
-                step="0.001"
-                min="0"
-              />
-              <div className="quick-buttons">
-                <button 
-                  type="button" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setPaidAmount(totalAmount);
-                  }}
-                >
-                  Pay Full
-                </button>
-                <button 
-                  type="button" 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setPaidAmount(0);
-                  }}
-                >
-                  Pay Later
-                </button>
-              </div>
-            </div>
-
-            <div className={`summary-row debt ${remainingAmount > 0 ? 'has-debt' : ''}`}>
-              <span>Remaining Debt:</span>
-              <span>L.L {remainingAmount.toFixed(3)}</span>
-            </div>
-          </div>
-
-          {/* ========== ACTION BUTTONS ========== */}
-          <div className="btn-container">
-            <button 
-              type="button" 
-              className="btn-cancel" 
-              onClick={() => window.history.back()}
-              disabled={loading}
-            >
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              className="btn-save"
-              disabled={loading}
-            >
-              {loading ? 'Saving...' : '💾 Save Purchase'}
-            </button>
           </div>
 
         </form>
