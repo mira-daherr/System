@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Snackbar, Alert } from '@mui/material';
 import { gamesAPI, categoriesAPI, customerPurchasesAPI } from '../../services/api';
 import './style.css';
 
@@ -26,9 +27,16 @@ const CustomerPurchase = () => {
   
   // Payment State
   const [paidAmount, setPaidAmount] = useState(0);
-  
+
   // Loading State
   const [loading, setLoading] = useState(false);
+
+  // Snackbar State
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   // Fetch games and categories on component mount
   useEffect(() => {
@@ -230,6 +238,16 @@ const CustomerPurchase = () => {
   const remainingAmount = totalAmount - paidAmount;
 
   // ===================================
+  // HANDLE SNACKBAR CLOSE
+  // ===================================
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  // ===================================
   // HANDLE FORM SUBMIT
   // ===================================
   const handleSubmit = async (e) => {
@@ -265,44 +283,43 @@ const CustomerPurchase = () => {
       const response = await customerPurchasesAPI.createPurchase(purchaseData, token);
 
       if (response.success) {
-        // ✨ التعديل الجديد هنا
+        // Build clean success message without DB values
         const customerType = selectedCustomer ? 'Existing Customer' : 'New Customer';
-        let message = '✅ Purchase saved successfully!\n\n' +
-          'Customer: ' + customerName + ' (' + customerType + ')\n' +
-          'Sale ID: ' + response.data.saleId + '\n';
-        
+        let successMessage = `✅ Purchase saved successfully for ${customerName} (${customerType})!\n`;
+
         if (selectedCustomer && existingDebt > 0) {
-          message += 'Previous Debt: L.L ' + existingDebt.toFixed(3) + '\n';
+          successMessage += `Previous Debt: L.L ${existingDebt.toFixed(3)} | `;
         }
-        
-        message += 'New Items: L.L ' + currentPurchaseTotal.toFixed(3) + '\n' +
-          'Grand Total: L.L ' + totalAmount.toFixed(3) + '\n' +
-          'Paid: L.L ' + paidAmount.toFixed(3) + '\n' +
-          'Remaining: L.L ' + remainingAmount.toFixed(3) + '\n\n' +
-          'Click OK to add another purchase\n' +
-          'Click Cancel to go back';
-        
-        const continueAdding = window.confirm(message);
-        
-        if (continueAdding) {
-          // Reset form للفاتورة الجديدة
-          setCustomerName('');
-          setCustomerSearch('');
-          setSelectedCustomer(null);
-          setCustomerHistory([]);
-          setSelectedGames([]);
-          setSelectedProducts([]);
-          setPaidAmount(0);
-          setSelectedCategory(null);
-          setCategoryProducts([]);
-        } else {
-          // الرجوع للصفحة السابقة
-          window.history.back();
-        }
+
+        successMessage += `New Purchase: L.L ${currentPurchaseTotal.toFixed(3)} | `;
+        successMessage += `Paid: L.L ${paidAmount.toFixed(3)} | `;
+        successMessage += `Remaining: L.L ${remainingAmount.toFixed(3)}`;
+
+        // Show success snackbar
+        setSnackbar({
+          open: true,
+          message: successMessage,
+          severity: 'success'
+        });
+
+        // Auto-reset form for next purchase
+        setCustomerName('');
+        setCustomerSearch('');
+        setSelectedCustomer(null);
+        setCustomerHistory([]);
+        setSelectedGames([]);
+        setSelectedProducts([]);
+        setPaidAmount(0);
+        setSelectedCategory(null);
+        setCategoryProducts([]);
       }
     } catch (error) {
       console.error('Error saving purchase:', error);
-      alert('❌ ' + (error.message || 'Error saving purchase!'));
+      setSnackbar({
+        open: true,
+        message: '❌ ' + (error.message || 'Error saving purchase!'),
+        severity: 'error'
+      });
     } finally {
       setLoading(false);
     }
@@ -766,8 +783,33 @@ const CustomerPurchase = () => {
             </div>
           </div>
 
-        </form>
-      </div>
+      </form>
+    </div>
+
+    {/* Success/Error Snackbar */}
+    <Snackbar
+        open={snackbar.open}
+        autoHideDuration={5000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{
+            width: '100%',
+            backgroundColor: snackbar.severity === 'success' ? '#2e7d32' : '#d32f2f',
+            color: '#fff',
+            fontSize: '14px',
+            fontWeight: 500,
+            '& .MuiAlert-icon': {
+              color: '#fff'
+            }
+          }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
