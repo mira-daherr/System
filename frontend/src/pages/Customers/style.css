@@ -356,6 +356,50 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
+.customer-purchase .suggestions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #ff4d4d 0%, #ff3333 100%);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.customer-purchase .suggestions-title {
+  flex: 1;
+}
+
+.customer-purchase .close-suggestions-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+  padding: 0;
+}
+
+.customer-purchase .close-suggestions-btn:hover {
+  background: white;
+  color: #ff3333;
+  transform: rotate(90deg);
+  border-color: white;
+}
+
 .customer-purchase .suggestion-item {
   padding: 12px 16px;
   cursor: pointer;

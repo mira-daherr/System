@@ -356,6 +356,17 @@ const CustomerPurchase = () => {
                     {/* Customer Suggestions Dropdown */}
                     {showSuggestions && customerSuggestions.length > 0 && (
                       <div className="customer-suggestions">
+                        <div className="suggestions-header">
+                          <span className="suggestions-title">Select Customer</span>
+                          <button
+                            type="button"
+                            className="close-suggestions-btn"
+                            onClick={() => setShowSuggestions(false)}
+                            title="Close suggestions"
+                          >
+                            ×
+                          </button>
+                        </div>
                         {customerSuggestions.map(customer => (
                           <div
                             key={customer.id}
