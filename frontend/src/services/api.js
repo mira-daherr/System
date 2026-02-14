@@ -574,6 +574,37 @@ export const customerPurchasesAPI = {
     } catch (error) {
       throw error.response?.data || { message: 'Network error occurred' };
     }
+  },
+
+  // GET customers with history and filtering
+  getCustomersWithHistory: async (filter, token, startDate = '', endDate = '') => {
+    try {
+      const params = { filter };
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+      
+      const response = await api.get('/api/customer-purchases/customers/history', {
+        params,
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  // PROCESS payment for a customer
+  processPayment: async (customerId, paymentAmount, token) => {
+    try {
+      const response = await api.post(
+        `/api/customer-purchases/customer/${customerId}/payment`,
+        { paymentAmount },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
   }
 };
 

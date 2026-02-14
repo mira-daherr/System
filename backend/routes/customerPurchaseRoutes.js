@@ -32,7 +32,13 @@ router.get('/customers/search', customerPurchaseController.searchCustomers);
 // GET all customers
 router.get('/customers', customerPurchaseController.getAllCustomers);
 
+// GET customers with purchase history and filtering
+router.get('/customers/history', customerPurchaseController.getCustomersWithHistory);
+
 // GET single customer by ID with sales
 router.get('/customer/:id', customerPurchaseController.getCustomerById);
+
+// POST payment for a customer
+router.post('/customer/:id/payment', customerPurchaseController.processPayment);
 
 module.exports = router;

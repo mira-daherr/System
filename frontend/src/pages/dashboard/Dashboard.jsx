@@ -60,6 +60,7 @@ function Dashboard() {
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 3, marginTop: 4 }}>
             {/* Customers Card */}
             <Card
+              onClick={() => navigate('/customers')}
               sx={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 backdropFilter: 'blur(10px)',

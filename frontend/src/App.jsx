@@ -9,6 +9,7 @@ import ProductsByCategory from "./pages/ProductsByCategory/ProductsByCategory";
 import Games from './pages/games/Game';
 import Expenses from './pages/Expenses/Expenses';
 import CustomerPurchase from './pages/Customers/CustomerPurchase';
+import Customers from './pages/Customers/Customers';
 import { isAuthenticated } from "./utils/auth";
 import "./App.css";
 
@@ -90,6 +91,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <CustomerPurchase />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Customers List Route */}
+          <Route
+            path="/customers"
+            element={
+              <ProtectedRoute>
+                <Customers />
               </ProtectedRoute>
             }
           />
