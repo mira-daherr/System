@@ -3,21 +3,12 @@ const db = require('../config/db');
 class Customer {
   // Create new customer
   static async create(customerData) {
-    const { name, phone, address, total_debt } = customerData;
+    const { name, total_debt } = customerData;
     const [result] = await db.query(
-      'INSERT INTO customers (name, phone, address, total_debt) VALUES (?, ?, ?, ?)',
-      [name, phone, address, total_debt || 0]
+      'INSERT INTO customers (name, total_debt) VALUES (?, ?)',
+      [name, total_debt || 0]
     );
     return result.insertId;
-  }
-
-  // Find customer by phone
-  static async findByPhone(phone) {
-    const [rows] = await db.query(
-      'SELECT * FROM customers WHERE phone = ?',
-      [phone]
-    );
-    return rows[0];
   }
 
   // Find customer by ID
@@ -27,6 +18,24 @@ class Customer {
       [id]
     );
     return rows[0];
+  }
+
+  // Find customer by name (case insensitive)
+  static async findByName(name) {
+    const [rows] = await db.query(
+      'SELECT * FROM customers WHERE LOWER(name) = LOWER(?)',
+      [name]
+    );
+    return rows[0];
+  }
+
+  // Search customers by name (partial match)
+  static async searchByName(searchTerm) {
+    const [rows] = await db.query(
+      'SELECT * FROM customers WHERE name LIKE ? ORDER BY created_at DESC',
+      [`%${searchTerm}%`]
+    );
+    return rows;
   }
 
   // Get all customers
