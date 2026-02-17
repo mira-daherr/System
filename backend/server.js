@@ -12,7 +12,8 @@ const productRoutes = require('./routes/productRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const gameRoutes = require('./routes/gameRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
-const customerPurchaseRoutes = require('./routes/customerPurchaseRoutes'); // ← جديد
+const customerPurchaseRoutes = require('./routes/customerPurchaseRoutes');
+const reportRoutes = require('./routes/reportRoutes'); // ← added
 
 // ============ Middleware ============
 app.use(cors());
@@ -28,7 +29,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/api/expenses', expenseRoutes);
-app.use('/api/customer-purchases', customerPurchaseRoutes); // ← جديد
+app.use('/api/customer-purchases', customerPurchaseRoutes);
+app.use('/api/reports', reportRoutes); // ← added
 
 // Root route for testing (GET /)
 app.get('/', (req, res) => {
@@ -80,13 +82,18 @@ app.get('/', (req, res) => {
         update: 'PUT /api/expenses/:id',
         delete: 'DELETE /api/expenses/:id'
       },
-      customerPurchases: { // ← جديد
+      customerPurchases: {
         createPurchase: 'POST /api/customer-purchases/purchase',
         getAllPurchases: 'GET /api/customer-purchases/purchases',
         getPurchaseById: 'GET /api/customer-purchases/purchase/:id',
         deletePurchase: 'DELETE /api/customer-purchases/purchase/:id',
         getAllCustomers: 'GET /api/customer-purchases/customers',
         getCustomerById: 'GET /api/customer-purchases/customer/:id'
+      },
+      reports: { // ← added
+        daily:   'GET /api/reports/daily?date=2026-02-17',
+        weekly:  'GET /api/reports/weekly?start=2026-02-10&end=2026-02-17',
+        monthly: 'GET /api/reports/monthly?month=2&year=2026'
       },
       note: '⚠️ All API routes require authentication (JWT token)'
     }
@@ -119,6 +126,7 @@ app.listen(PORT, () => {
   console.log(`   - Categories: http://localhost:${PORT}/api/categories`);
   console.log(`   - Games: http://localhost:${PORT}/api/games`);
   console.log(`   - Expenses: http://localhost:${PORT}/api/expenses`);
-  console.log(`   - Customer Purchases: http://localhost:${PORT}/api/customer-purchases`); // ← جديد
+  console.log(`   - Customer Purchases: http://localhost:${PORT}/api/customer-purchases`);
+  console.log(`   - Reports: http://localhost:${PORT}/api/reports`); // ← added
   console.log(`🔐 All API routes require JWT token`);
 });

@@ -1,0 +1,417 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --black:    #080808;
+  --black-2:  #101010;
+  --black-3:  #181818;
+  --black-4:  #202020;
+  --red:      #e8001c;
+  --red-soft: rgba(232, 0, 28, 0.12);
+  --red-mid:  rgba(232, 0, 28, 0.25);
+  --white:    #ffffff;
+  --white-2:  rgba(255,255,255,0.55);
+  --white-3:  rgba(255,255,255,0.07);
+  --white-4:  rgba(255,255,255,0.03);
+  --border:   rgba(255,255,255,0.07);
+  --border-r: rgba(232, 0, 28, 0.28);
+}
+
+/* ── Base ── */
+.reports-container {
+  font-family: 'Manrope', sans-serif;
+  padding: 36px 32px;
+  min-height: 100vh;
+  background: var(--black);
+  color: var(--white);
+  position: relative;
+}
+
+.reports-container::after {
+  content: '';
+  position: fixed;
+  top: -100px; right: -100px;
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, rgba(232,0,28,0.05) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Header ── */
+.reports-header {
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 1;
+  animation: fadeUp 0.4s ease both;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.back-button {
+  color: var(--red) !important;
+  background: var(--red-soft) !important;
+  border: 1px solid var(--border-r) !important;
+  border-radius: 10px !important;
+  width: 44px !important;
+  height: 44px !important;
+  transition: all 0.2s ease !important;
+}
+
+.back-button:hover {
+  background: var(--red-mid) !important;
+  transform: translateX(-3px) !important;
+}
+
+.page-title {
+  font-family: 'Bebas Neue', sans-serif !important;
+  font-size: 48px !important;
+  letter-spacing: 5px !important;
+  color: var(--white) !important;
+  line-height: 1 !important;
+  position: relative;
+  display: inline-block;
+}
+
+.page-title::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: -4px;
+  width: 48px; height: 2px;
+  background: var(--red);
+}
+
+/* ── Tabs ── */
+.report-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--black-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  width: fit-content;
+}
+
+.report-tab {
+  padding: 9px 28px;
+  border: none;
+  background: transparent;
+  color: var(--white-2);
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  transition: all 0.2s ease;
+}
+
+.report-tab:hover { color: var(--white); background: var(--white-3); }
+.report-tab.active { background: var(--red); color: var(--white); box-shadow: 0 4px 14px rgba(232,0,28,0.35); }
+
+/* ── Filters ── */
+.report-filters {
+  background: var(--black-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 1;
+  animation: fadeUp 0.4s ease 0.05s both;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--red);
+}
+
+.filter-input {
+  background: var(--black-3);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: var(--white);
+  padding: 8px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+  min-width: 150px;
+}
+
+.filter-input:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-soft);
+}
+
+.filter-select { cursor: pointer; }
+.filter-select option { background: var(--black-3); }
+
+.fetch-btn {
+  background: var(--red);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 9px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(232,0,28,0.3);
+}
+
+.fetch-btn:hover {
+  background: #ff1a30;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(232,0,28,0.5);
+}
+
+/* ── USD Rate Row ── */
+.rate-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.rate-input { width: 140px !important; min-width: 140px !important; }
+
+.rate-preview {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--white-2);
+  background: var(--white-3);
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+/* ── Loading ── */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Report Content ── */
+.report-content {
+  position: relative;
+  z-index: 1;
+  animation: fadeUp 0.4s ease 0.1s both;
+}
+
+.period-label {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 13px !important;
+  color: var(--white-2) !important;
+  margin-bottom: 20px !important;
+  letter-spacing: 0.5px;
+}
+
+/* ── Summary Cards ── */
+.summary-card {
+  background: var(--black-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+  cursor: default;
+  height: 100%;
+}
+
+.summary-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  transition: opacity 0.3s;
+  opacity: 0.6;
+}
+
+.summary-card.games::before    { background: var(--white); }
+.summary-card.products::before { background: var(--white); }
+.summary-card.expenses::before { background: var(--red); }
+.summary-card.profit.positive::before { background: var(--white); }
+.summary-card.profit.negative::before { background: var(--red); }
+
+.summary-card:hover { transform: translateY(-5px) !important; box-shadow: 0 16px 40px rgba(0,0,0,0.5) !important; }
+.summary-card:hover::before { opacity: 1; }
+
+.summary-card-inner { padding: 22px !important; }
+
+.summary-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--white-3);
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.summary-icon.expenses-icon {
+  background: var(--red-soft);
+  border-color: var(--border-r);
+}
+
+.summary-icon svg { font-size: 18px !important; color: var(--white) !important; }
+.summary-icon.expenses-icon svg { color: var(--red) !important; }
+
+.summary-label {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 2px !important;
+  color: var(--white-2) !important;
+  margin-bottom: 8px !important;
+  display: block;
+}
+
+.summary-value {
+  font-family: 'Manrope', sans-serif !important;
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  color: var(--white) !important;
+  line-height: 1.1 !important;
+  display: block;
+}
+
+.summary-value .currency {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--white-2);
+  margin-left: 3px;
+}
+
+.summary-value.expenses-val { color: var(--red) !important; }
+.summary-value.profit-neg   { color: var(--red) !important; }
+
+.summary-usd {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 12px !important;
+  color: var(--white-2) !important;
+  margin-top: 5px !important;
+  display: block;
+}
+
+/* ── Profit Banner ── */
+.profit-banner {
+  margin-top: 28px;
+  border-radius: 12px;
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.profit-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--white) 0px, var(--white) 1px,
+    transparent 1px, transparent 12px
+  );
+}
+
+.banner-pos { background: var(--black-2); border-color: rgba(255,255,255,0.15); }
+.banner-neg { background: var(--black-2); border-color: var(--border-r); }
+
+.profit-banner-label {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 3px !important;
+  color: var(--white-2) !important;
+  margin-bottom: 4px !important;
+}
+
+.profit-banner-formula {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 12px !important;
+  color: var(--white-2) !important;
+}
+
+.profit-banner-values {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.profit-banner-value {
+  font-family: 'Bebas Neue', sans-serif !important;
+  font-size: 52px !important;
+  letter-spacing: 2px !important;
+  line-height: 1 !important;
+}
+
+.banner-pos .profit-banner-value { color: var(--white) !important; }
+.banner-neg .profit-banner-value { color: var(--red) !important; }
+
+.profit-banner-usd {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 16px !important;
+  color: var(--white-2) !important;
+  letter-spacing: 1px !important;
+}
+
+.banner-neg .profit-banner-usd { color: rgba(232,0,28,0.7) !important; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--black-2); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--red); }
+
+/* ── Animation ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .reports-container { padding: 18px 16px; }
+  .page-title { font-size: 36px !important; }
+  .report-tabs { width: 100%; }
+  .report-tab { flex: 1; text-align: center; padding: 9px 0; }
+  .filter-row { flex-direction: column; align-items: stretch; }
+  .filter-input { min-width: 100%; }
+  .fetch-btn { width: 100%; }
+  .profit-banner { flex-direction: column; gap: 8px; }
+  .profit-banner-values { align-items: flex-start; }
+  .profit-banner-value { font-size: 38px !important; }
+}
