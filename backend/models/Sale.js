@@ -14,8 +14,8 @@ class Sale {
     
     const [result] = await db.query(
       `INSERT INTO sales 
-       (customer_id, customer_name, total_amount, paid_amount, remaining_amount, notes) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
+       (customer_id, customer_name, total_amount, paid_amount, remaining_amount, notes, sale_date) 
+       VALUES (?, ?, ?, ?, ?, ?, NOW())`,  // ← added sale_date = NOW()
       [customer_id, customer_name, total_amount, paid_amount, remaining_amount, notes]
     );
     return result.insertId;

@@ -115,11 +115,10 @@ exports.getProductById = async (req, res) => {
 // CREATE new product
 exports.createProduct = async (req, res) => {
   try {
-    const { name, price, category } = req.body;
+    const { name, price, initial_price, category } = req.body;  // ← added initial_price
 
     // Validation
     if (!name || !price) {
-      // Delete uploaded file if validation fails
       if (req.file) {
         fs.unlinkSync(req.file.path);
       }
@@ -131,7 +130,6 @@ exports.createProduct = async (req, res) => {
     }
 
     if (parseFloat(price) < 0) {
-      // Delete uploaded file if validation fails
       if (req.file) {
         fs.unlinkSync(req.file.path);
       }
@@ -151,6 +149,7 @@ exports.createProduct = async (req, res) => {
     const productId = await Product.create({
       name,
       price: parseFloat(price),
+      initial_price: initial_price ? parseFloat(initial_price) : 0,  // ← added initial_price
       category: category || 'Uncategorized',
       image: imageUrl
     });
@@ -182,13 +181,12 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, price, category, is_active } = req.body;
+    const { name, price, initial_price, category, is_active } = req.body;  // ← added initial_price
 
     // Check if product exists
     const productExists = await Product.exists(id);
 
     if (!productExists) {
-      // Delete uploaded file if product doesn't exist
       if (req.file) {
         fs.unlinkSync(req.file.path);
       }
@@ -201,7 +199,6 @@ exports.updateProduct = async (req, res) => {
 
     // Validate price if provided
     if (price !== undefined && parseFloat(price) < 0) {
-      // Delete uploaded file if validation fails
       if (req.file) {
         fs.unlinkSync(req.file.path);
       }
@@ -229,6 +226,7 @@ exports.updateProduct = async (req, res) => {
     const updateData = {
       name,
       price: price ? parseFloat(price) : undefined,
+      initial_price: initial_price !== undefined ? parseFloat(initial_price) : undefined,  // ← added initial_price
       category,
       image: imageUrl,
       is_active
@@ -271,7 +269,6 @@ exports.deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if product exists
     const productExists = await Product.exists(id);
 
     if (!productExists) {
@@ -337,7 +334,6 @@ exports.permanentDeleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Check if product exists
     const productExists = await Product.exists(id);
 
     if (!productExists) {
@@ -347,10 +343,8 @@ exports.permanentDeleteProduct = async (req, res) => {
       });
     }
 
-    // Get product to delete its image
     const product = await Product.findById(id);
 
-    // Delete image from server
     if (product && product.image) {
       deleteImageFile(product.image);
     }

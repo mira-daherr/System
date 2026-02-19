@@ -41,13 +41,13 @@ class Product {
     }
   }
 
-  // Create new product
+  // Create new product  ← added initial_price
   static async create(productData) {
     try {
-      const { name, price, category, image } = productData;
+      const { name, price, initial_price, category, image } = productData;
       const [result] = await db.query(
-        'INSERT INTO products (name, price, category, image, is_active) VALUES (?, ?, ?, ?, 1)',
-        [name, price, category || 'Uncategorized', image || null]
+        'INSERT INTO products (name, price, initial_price, category, image, is_active) VALUES (?, ?, ?, ?, ?, 1)',
+        [name, price, initial_price || 0, category || 'Uncategorized', image || null]
       );
       return result.insertId;
     } catch (error) {
@@ -55,10 +55,10 @@ class Product {
     }
   }
 
-  // Update product
+  // Update product  ← added initial_price
   static async update(id, productData) {
     try {
-      const { name, price, category, image, is_active } = productData;
+      const { name, price, initial_price, category, image, is_active } = productData;
       
       const updates = [];
       const values = [];
@@ -70,6 +70,10 @@ class Product {
       if (price !== undefined) {
         updates.push('price = ?');
         values.push(price);
+      }
+      if (initial_price !== undefined) {
+        updates.push('initial_price = ?');
+        values.push(initial_price);
       }
       if (category !== undefined) {
         updates.push('category = ?');

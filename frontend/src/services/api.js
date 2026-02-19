@@ -607,5 +607,41 @@ export const customerPurchasesAPI = {
     }
   }
 };
+export const reportsAPI = {
+  getDaily: async (date, token) => {
+    try {
+      const response = await api.get('/api/reports/daily', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { date }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
 
+  getWeekly: async (start, end, token) => {
+    try {
+      const response = await api.get('/api/reports/weekly', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { start, end }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  },
+
+  getMonthly: async (month, year, token) => {
+    try {
+      const response = await api.get('/api/reports/monthly', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { month, year }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Network error occurred' };
+    }
+  }
+};
 export default api;

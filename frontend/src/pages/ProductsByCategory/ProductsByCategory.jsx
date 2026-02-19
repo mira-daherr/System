@@ -67,6 +67,7 @@ const ProductsByCategory = () => {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
+    initial_price: '',  // ← added
     category: category,
     imageFile: null
   });
@@ -112,7 +113,6 @@ const ProductsByCategory = () => {
 
   // Format currency for Lebanese Lira
   const formatCurrency = (amount) => {
-    // Return price as-is from database
     return amount;
   };
 
@@ -149,6 +149,7 @@ const ProductsByCategory = () => {
       setFormData({
         name: product.name,
         price: product.price.toString(),
+        initial_price: product.initial_price ? product.initial_price.toString() : '',  // ← added
         category: product.category,
         imageFile: null
       });
@@ -156,7 +157,7 @@ const ProductsByCategory = () => {
     } else {
       setEditMode(false);
       setCurrentProduct(null);
-      setFormData({ name: '', price: '', category: category, imageFile: null });
+      setFormData({ name: '', price: '', initial_price: '', category: category, imageFile: null });  // ← added
       setImagePreview(null);
     }
     setOpenDialog(true);
@@ -168,7 +169,7 @@ const ProductsByCategory = () => {
     setOpenDialog(false);
     setEditMode(false);
     setCurrentProduct(null);
-    setFormData({ name: '', price: '', category: category, imageFile: null });
+    setFormData({ name: '', price: '', initial_price: '', category: category, imageFile: null });  // ← added
     setImagePreview(null);
     setError('');
   };
@@ -220,6 +221,7 @@ const ProductsByCategory = () => {
       const productData = new FormData();
       productData.append('name', formData.name.trim());
       productData.append('price', parseFloat(formData.price));
+      productData.append('initial_price', formData.initial_price ? parseFloat(formData.initial_price) : 0);  // ← added
       productData.append('category', formData.category);
 
       if (formData.imageFile) {
@@ -427,6 +429,17 @@ const ProductsByCategory = () => {
                     Price
                   </TableSortLabel>
                 </TableCell>
+                {/* ← added */}
+                <TableCell className="table-header-cell">
+                  <TableSortLabel
+                    active={orderBy === 'initial_price'}
+                    direction={orderBy === 'initial_price' ? order : 'asc'}
+                    onClick={() => handleSort('initial_price')}
+                    className="sort-label"
+                  >
+                    Initial Price
+                  </TableSortLabel>
+                </TableCell>
                 <TableCell className="table-header-cell actions-cell">Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -464,6 +477,10 @@ const ProductsByCategory = () => {
                   </TableCell>
                   <TableCell className="product-price">
                     L.L {formatCurrency(product.price)}
+                  </TableCell>
+                  {/* ← added */}
+                  <TableCell className="product-price">
+                    L.L {formatCurrency(product.initial_price || 0)}
                   </TableCell>
                   <TableCell>
                     <Box className="action-buttons">
@@ -539,6 +556,18 @@ const ProductsByCategory = () => {
               fullWidth
               required
               value={formData.price}
+              onChange={handleInputChange}
+              inputProps={{ step: '0.01', min: '0' }}
+              className="form-field"
+            />
+            {/* ← added */}
+            <TextField
+              margin="dense"
+              name="initial_price"
+              label="Initial Price / راسمال (L.L)"
+              type="number"
+              fullWidth
+              value={formData.initial_price}
               onChange={handleInputChange}
               inputProps={{ step: '0.01', min: '0' }}
               className="form-field"
