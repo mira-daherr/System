@@ -115,7 +115,7 @@ exports.getProductById = async (req, res) => {
 // CREATE new product
 exports.createProduct = async (req, res) => {
   try {
-    const { name, price, initial_price, category } = req.body;  // ← added initial_price
+    const { name, price, initial_price, quantity, category } = req.body;  // ← added initial_price and quantity
 
     // Validation
     if (!name || !price) {
@@ -140,6 +140,17 @@ exports.createProduct = async (req, res) => {
       });
     }
 
+    if (quantity !== undefined && parseInt(quantity) < 0) {
+      if (req.file) {
+        fs.unlinkSync(req.file.path);
+      }
+
+      return res.status(400).json({
+        success: false,
+        message: 'Quantity cannot be negative'
+      });
+    }
+
     // If file uploaded, save the URL
     let imageUrl = null;
     if (req.file) {
@@ -150,6 +161,7 @@ exports.createProduct = async (req, res) => {
       name,
       price: parseFloat(price),
       initial_price: initial_price ? parseFloat(initial_price) : 0,  // ← added initial_price
+      quantity: quantity ? parseInt(quantity) : 0,  // ← added quantity
       category: category || 'Uncategorized',
       image: imageUrl
     });
@@ -181,7 +193,7 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, price, initial_price, category, is_active } = req.body;  // ← added initial_price
+    const { name, price, initial_price, quantity, category, is_active } = req.body;  // ← added initial_price and quantity
 
     // Check if product exists
     const productExists = await Product.exists(id);
@@ -209,6 +221,18 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
+    // Validate quantity if provided
+    if (quantity !== undefined && parseInt(quantity) < 0) {
+      if (req.file) {
+        fs.unlinkSync(req.file.path);
+      }
+
+      return res.status(400).json({
+        success: false,
+        message: 'Quantity cannot be negative'
+      });
+    }
+
     // Get current product to check for old image
     const currentProduct = await Product.findById(id);
 
@@ -227,6 +251,7 @@ exports.updateProduct = async (req, res) => {
       name,
       price: price ? parseFloat(price) : undefined,
       initial_price: initial_price !== undefined ? parseFloat(initial_price) : undefined,  // ← added initial_price
+      quantity: quantity !== undefined ? parseInt(quantity) : undefined,  // ← added quantity
       category,
       image: imageUrl,
       is_active

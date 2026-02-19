@@ -1,6 +1,7 @@
 const Customer = require('../models/Customer');
 const Sale = require('../models/Sale');
 const SaleItem = require('../models/SaleItem');
+const Product = require('../models/Products');
 const db = require('../config/db'); 
 // ===================================
 // CREATE new purchase
@@ -69,9 +70,21 @@ exports.createPurchase = async (req, res) => {
       }
     }
 
-    // 4. Add product items
+    // 4. Add product items and decrease quantity
     if (selectedProducts && selectedProducts.length > 0) {
       for (const product of selectedProducts) {
+        // Check if product has sufficient quantity
+        const hasSufficientQuantity = await Product.checkQuantity(product.id, product.quantity);
+        if (!hasSufficientQuantity) {
+          throw new Error(`Insufficient quantity for product: ${product.name}`);
+        }
+        
+        // Decrease product quantity
+        const decreased = await Product.decreaseQuantity(product.id, product.quantity);
+        if (decreased === 0) {
+          throw new Error(`Failed to decrease quantity for product: ${product.name}`);
+        }
+        
         await SaleItem.create({
           sale_id: saleId,
           item_type: 'product',
