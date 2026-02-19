@@ -402,11 +402,7 @@ exports.getCustomersWithHistory = async (req, res) => {
         c.updated_at,
         GROUP_CONCAT(
           DISTINCT DATE_FORMAT(
-            CASE 
-              WHEN s.sale_date IS NULL OR s.sale_date = '0000-00-00 00:00:00' 
-              THEN s.created_at 
-              ELSE s.sale_date 
-            END, 
+            COALESCE(NULLIF(s.sale_date, 0), s.created_at), 
             '%Y-%m-%d'
           ) 
           ORDER BY s.created_at DESC 
