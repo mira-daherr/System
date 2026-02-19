@@ -75,6 +75,8 @@ const Products = () => {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
+    initial_price: '',
+    quantity: '',
     imageFile: null
   });
 
@@ -190,13 +192,15 @@ const Products = () => {
       setFormData({
         name: product.name,
         price: product.price.toString(),
+        initial_price: (product.initial_price || 0).toString(),
+        quantity: (product.quantity || 0).toString(),
         imageFile: null
       });
       setImagePreview(product.image);
     } else {
       setEditMode(false);
       setCurrentProduct(null);
-      setFormData({ name: '', price: '', imageFile: null });
+      setFormData({ name: '', price: '', initial_price: '', quantity: '', imageFile: null });
       setImagePreview(null);
     }
     setOpenDialog(true);
@@ -208,7 +212,7 @@ const Products = () => {
     setOpenDialog(false);
     setEditMode(false);
     setCurrentProduct(null);
-    setFormData({ name: '', price: '', imageFile: null });
+    setFormData({ name: '', price: '', initial_price: '', quantity: '', imageFile: null });
     setImagePreview(null);
     setError('');
   };
@@ -266,6 +270,8 @@ const Products = () => {
       const productData = new FormData();
       productData.append('name', formData.name.trim());
       productData.append('price', parseFloat(formData.price));
+      productData.append('initial_price', parseFloat(formData.initial_price) || 0);
+      productData.append('quantity', parseInt(formData.quantity) || 0);
 
       if (formData.imageFile) {
         productData.append('image', formData.imageFile);
@@ -577,7 +583,27 @@ const Products = () => {
                     onClick={() => handleSort('price')}
                     className="sort-label"
                   >
-                    Price
+                    Sell Price/Unit
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell className="table-header-cell">
+                  <TableSortLabel
+                    active={orderBy === 'initial_price'}
+                    direction={orderBy === 'initial_price' ? order : 'asc'}
+                    onClick={() => handleSort('initial_price')}
+                    className="sort-label"
+                  >
+                    Cost/Unit
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell className="table-header-cell">
+                  <TableSortLabel
+                    active={orderBy === 'quantity'}
+                    direction={orderBy === 'quantity' ? order : 'asc'}
+                    onClick={() => handleSort('quantity')}
+                    className="sort-label"
+                  >
+                    Stock Qty
                   </TableSortLabel>
                 </TableCell>
                 <TableCell className="table-header-cell actions-cell">
@@ -628,6 +654,17 @@ const Products = () => {
                   </TableCell>
                   <TableCell className="product-price">
                     L.L {formatCurrency(product.price)}
+                  </TableCell>
+                  <TableCell className="product-price">
+                    L.L {formatCurrency(product.initial_price || 0)}
+                  </TableCell>
+                  <TableCell className="product-quantity">
+                    <Chip 
+                      label={product.quantity || 0}
+                      size="small"
+                      color={product.quantity > 0 ? "success" : "error"}
+                      sx={{ fontWeight: 'bold' }}
+                    />
                   </TableCell>
                   <TableCell>
                     <Box className="action-buttons">
@@ -715,7 +752,7 @@ const Products = () => {
             <TextField
               margin="dense"
               name="price"
-              label="Price (L.L)"
+              label="Sell Price per Unit (L.L)"
               type="number"
               fullWidth
               required
@@ -723,6 +760,32 @@ const Products = () => {
               onChange={handleInputChange}
               inputProps={{ step: '0.01', min: '0' }}
               className="form-field"
+              helperText="Price for 1 unit of this product"
+            />
+            <TextField
+              margin="dense"
+              name="initial_price"
+              label="Initial Cost per Unit (L.L)"
+              type="number"
+              fullWidth
+              value={formData.initial_price}
+              onChange={handleInputChange}
+              inputProps={{ step: '0.01', min: '0' }}
+              className="form-field"
+              helperText="Your cost for 1 unit (used to calculate profit)"
+            />
+            <TextField
+              margin="dense"
+              name="quantity"
+              label="Total Quantity in Stock"
+              type="number"
+              fullWidth
+              required
+              value={formData.quantity}
+              onChange={handleInputChange}
+              inputProps={{ step: '1', min: '0' }}
+              className="form-field"
+              helperText="Total number of units available"
             />
 
             {/* Upload Image Section */}
