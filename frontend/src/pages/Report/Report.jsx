@@ -9,7 +9,10 @@ import {
   SportsEsports as GamesIcon,
   ShoppingCart as ProductsIcon,
   MoneyOff as ExpensesIcon,
-  AccountBalance as ProfitIcon
+  AccountBalance as ProfitIcon,
+  TrendingUp as GainIcon,
+  AttachMoney as RevenueIcon,
+  LocalAtm as CostIcon
 } from '@mui/icons-material';
 import { reportsAPI } from '../../services/api';
 import { getAuthToken, isAuthenticated } from '../../utils/auth';
@@ -184,9 +187,36 @@ const fmtUSD = (val) => {
 
           <Typography className="period-label">📅 {getPeriodLabel()}</Typography>
 
-          {/* Summary Cards only — no breakdown */}
+          {/* All Financial Metrics */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={4}>
+              <SummaryCard
+                label="TOTAL REVENUE"
+                val={data.total_revenue}
+                cardClass="revenue"
+                iconClass=""
+                icon={<RevenueIcon />}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <SummaryCard
+                label="PRODUCT COSTS"
+                val={data.product_costs}
+                cardClass="costs"
+                iconClass=""
+                icon={<CostIcon />}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <SummaryCard
+                label="TOTAL GAIN"
+                val={data.total_gain}
+                cardClass="total-gain"
+                iconClass=""
+                icon={<GainIcon />}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
               <SummaryCard
                 label="GAMES GAIN"
                 val={data.games_gain}
@@ -195,7 +225,7 @@ const fmtUSD = (val) => {
                 icon={<GamesIcon />}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={4}>
               <SummaryCard
                 label="PRODUCTS GAIN"
                 val={data.products_gain}
@@ -204,9 +234,9 @@ const fmtUSD = (val) => {
                 icon={<ProductsIcon />}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={4}>
               <SummaryCard
-                label="EXPENSES"
+                label="TOTAL EXPENSES"
                 val={data.total_expenses}
                 cardClass="expenses"
                 iconClass="expenses-icon"
@@ -214,24 +244,14 @@ const fmtUSD = (val) => {
                 isExpense
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <SummaryCard
-                label="NET PROFIT"
-                val={data.net_profit}
-                cardClass={`profit ${data.net_profit >= 0 ? 'positive' : 'negative'}`}
-                iconClass=""
-                icon={<ProfitIcon />}
-                isProfit
-              />
-            </Grid>
           </Grid>
 
-          {/* Net Profit Banner */}
+          {/* Net Profit Banner - Final Result */}
           <Box className={`profit-banner ${data.net_profit >= 0 ? 'banner-pos' : 'banner-neg'}`}>
             <Box>
               <Typography className="profit-banner-label">NET PROFIT</Typography>
               <Typography className="profit-banner-formula">
-                {fmtLL(data.total_gain)} (gain) − {fmtLL(data.total_expenses)} (expenses)
+                {fmtLL(data.total_gain)} (Gain) − {fmtLL(data.total_expenses)} (Expenses)
               </Typography>
             </Box>
             <Box className="profit-banner-values">
