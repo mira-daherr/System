@@ -413,14 +413,6 @@ exports.getCustomersWithHistory = async (req, res) => {
         c.total_debt,
         c.created_at,
         c.updated_at,
-        GROUP_CONCAT(
-          DISTINCT DATE_FORMAT(
-            COALESCE(NULLIF(s.sale_date, 0), s.created_at), 
-            '%Y-%m-%d'
-          ) 
-          ORDER BY s.created_at DESC 
-          SEPARATOR ','
-        ) as purchase_dates,
         COUNT(DISTINCT s.id) as total_purchases,
         SUM(CASE WHEN s.total_amount > 0 THEN s.total_amount ELSE 0 END) as total_spent
       FROM customers c
@@ -430,11 +422,35 @@ exports.getCustomersWithHistory = async (req, res) => {
       ORDER BY c.total_debt DESC, c.name ASC
     `;
 
-    const [rows] = await db.query(query);
+    const [customers] = await db.query(query);
+    
+    // Get individual purchases for each customer
+    for (const customer of customers) {
+      const purchasesQuery = `
+        SELECT 
+          s.id,
+          DATE_FORMAT(COALESCE(NULLIF(s.sale_date, 0), s.created_at), '%Y-%m-%d') as purchase_date,
+          s.total_amount,
+          s.paid_amount,
+          s.remaining_amount,
+          GROUP_CONCAT(
+            CONCAT(si.item_name, ' (x', si.quantity, ')')
+            SEPARATOR ', '
+          ) as items
+        FROM sales s
+        LEFT JOIN sale_items si ON s.id = si.sale_id
+        WHERE s.customer_id = ? ${dateCondition.replace('s.created_at', 's.created_at')}
+        GROUP BY s.id, s.sale_date, s.created_at, s.total_amount, s.paid_amount, s.remaining_amount
+        ORDER BY s.created_at DESC
+      `;
+      
+      const [purchases] = await db.query(purchasesQuery, [customer.id]);
+      customer.purchases = purchases;
+    }
     
     res.json({ 
       success: true, 
-      data: rows 
+      data: customers 
     });
   } catch (error) {
     console.error('Error fetching customers with history:', error);
