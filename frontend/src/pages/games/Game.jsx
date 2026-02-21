@@ -46,7 +46,6 @@ const Games = () => {
 
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
-  const [isInitialMount, setIsInitialMount] = useState(true);
 
   // Sorting states
   const [orderBy, setOrderBy] = useState('name');
@@ -80,12 +79,6 @@ const Games = () => {
 
   // Debounced search effect
   useEffect(() => {
-    // Skip on initial mount
-    if (isInitialMount) {
-      setIsInitialMount(false);
-      return;
-    }
-
     if (searchDebounce) {
       clearTimeout(searchDebounce);
     }
@@ -117,8 +110,7 @@ const Games = () => {
       }
 
       if (response.success) {
-        // Force update by creating new array reference
-        setGames([...(response.data || [])]);
+        setGames(response.data || []);
       } else {
         setError(response.message || 'Failed to fetch games');
       }
@@ -170,8 +162,8 @@ const Games = () => {
       setCurrentGame(game);
       setFormData({
         name: game.name,
-        price_per_hour: game.price_per_hour ? game.price_per_hour.toString() : '',
-        price_per_round: game.price_per_round ? game.price_per_round.toString() : ''
+        price_per_hour: game.price_per_hour.toString(),
+        price_per_round: game.price_per_round.toString()
       });
     } else {
       setEditMode(false);
@@ -209,14 +201,10 @@ const Games = () => {
     try {
       const token = getAuthToken();
 
-      // Handle price values - allow zero explicitly
-      const pricePerHour = formData.price_per_hour === '' ? 0 : parseFloat(formData.price_per_hour);
-      const pricePerRound = formData.price_per_round === '' ? 0 : parseFloat(formData.price_per_round);
-
       const gameData = {
         name: formData.name.trim(),
-        price_per_hour: isNaN(pricePerHour) ? 0 : pricePerHour,
-        price_per_round: isNaN(pricePerRound) ? 0 : pricePerRound
+        price_per_hour: parseFloat(formData.price_per_hour) || 0,
+        price_per_round: parseFloat(formData.price_per_round) || 0
       };
 
       let response;
@@ -229,8 +217,7 @@ const Games = () => {
       if (response.success) {
         setSuccess(editMode ? 'Game updated successfully' : 'Game added successfully');
         handleCloseDialog();
-        await fetchGames(); // Wait for fetch to complete
-        setTimeout(() => setSuccess(''), 3000);
+        fetchGames();
       } else {
         setError(response.message || 'Operation failed');
       }

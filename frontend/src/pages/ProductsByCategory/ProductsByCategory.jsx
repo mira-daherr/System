@@ -67,8 +67,7 @@ const ProductsByCategory = () => {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
-    initial_price: '',
-    quantity: '',
+    initial_price: '',  // ← added
     category: category,
     imageFile: null
   });
@@ -150,8 +149,7 @@ const ProductsByCategory = () => {
       setFormData({
         name: product.name,
         price: product.price.toString(),
-        initial_price: product.initial_price ? product.initial_price.toString() : '',
-        quantity: product.quantity ? product.quantity.toString() : '',
+        initial_price: product.initial_price ? product.initial_price.toString() : '',  // ← added
         category: product.category,
         imageFile: null
       });
@@ -159,7 +157,7 @@ const ProductsByCategory = () => {
     } else {
       setEditMode(false);
       setCurrentProduct(null);
-      setFormData({ name: '', price: '', initial_price: '', quantity: '', category: category, imageFile: null });
+      setFormData({ name: '', price: '', initial_price: '', category: category, imageFile: null });  // ← added
       setImagePreview(null);
     }
     setOpenDialog(true);
@@ -171,7 +169,7 @@ const ProductsByCategory = () => {
     setOpenDialog(false);
     setEditMode(false);
     setCurrentProduct(null);
-    setFormData({ name: '', price: '', initial_price: '', quantity: '', category: category, imageFile: null });
+    setFormData({ name: '', price: '', initial_price: '', category: category, imageFile: null });  // ← added
     setImagePreview(null);
     setError('');
   };
@@ -223,8 +221,7 @@ const ProductsByCategory = () => {
       const productData = new FormData();
       productData.append('name', formData.name.trim());
       productData.append('price', parseFloat(formData.price));
-      productData.append('initial_price', formData.initial_price ? parseFloat(formData.initial_price) : 0);
-      productData.append('quantity', formData.quantity ? parseInt(formData.quantity) : 0);
+      productData.append('initial_price', formData.initial_price ? parseFloat(formData.initial_price) : 0);  // ← added
       productData.append('category', formData.category);
 
       if (formData.imageFile) {
@@ -432,6 +429,7 @@ const ProductsByCategory = () => {
                     Price
                   </TableSortLabel>
                 </TableCell>
+                {/* ← added */}
                 <TableCell className="table-header-cell">
                   <TableSortLabel
                     active={orderBy === 'initial_price'}
@@ -440,16 +438,6 @@ const ProductsByCategory = () => {
                     className="sort-label"
                   >
                     Initial Price
-                  </TableSortLabel>
-                </TableCell>
-                <TableCell className="table-header-cell">
-                  <TableSortLabel
-                    active={orderBy === 'quantity'}
-                    direction={orderBy === 'quantity' ? order : 'asc'}
-                    onClick={() => handleSort('quantity')}
-                    className="sort-label"
-                  >
-                    Quantity
                   </TableSortLabel>
                 </TableCell>
                 <TableCell className="table-header-cell actions-cell">Actions</TableCell>
@@ -490,11 +478,9 @@ const ProductsByCategory = () => {
                   <TableCell className="product-price">
                     L.L {formatCurrency(product.price)}
                   </TableCell>
+                  {/* ← added */}
                   <TableCell className="product-price">
                     L.L {formatCurrency(product.initial_price || 0)}
-                  </TableCell>
-                  <TableCell className="product-quantity">
-                    {product.quantity || 0}
                   </TableCell>
                   <TableCell>
                     <Box className="action-buttons">
@@ -574,6 +560,7 @@ const ProductsByCategory = () => {
               inputProps={{ step: '0.01', min: '0' }}
               className="form-field"
             />
+            {/* ← added */}
             <TextField
               margin="dense"
               name="initial_price"
@@ -584,19 +571,6 @@ const ProductsByCategory = () => {
               onChange={handleInputChange}
               inputProps={{ step: '0.01', min: '0' }}
               className="form-field"
-            />
-            <TextField
-              margin="dense"
-              name="quantity"
-              label="Quantity in Stock"
-              type="number"
-              fullWidth
-              required
-              value={formData.quantity}
-              onChange={handleInputChange}
-              inputProps={{ step: '1', min: '0' }}
-              className="form-field"
-              helperText="Total number of units available"
             />
             <FormControl fullWidth margin="dense" className="form-field">
               <InputLabel>Category</InputLabel>

@@ -130,10 +130,10 @@ const Expenses = () => {
     }
 
     const filtered = expenses.filter(expense => {
-      // Get date string in YYYY-MM-DD format
-      const expenseDate = expense.date.split('T')[0]; // Handle both "2026-02-19" and "2026-02-19T00:00:00"
-      
-      return expenseDate >= startDate && expenseDate <= endDate;
+      const expenseDate = new Date(expense.date);
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      return expenseDate >= start && expenseDate <= end;
     });
 
     setFilteredExpenses(filtered);
@@ -317,7 +317,7 @@ const Expenses = () => {
       {/* Analytics Cards */}
       {analytics && (
         <Grid container spacing={3} className="analytics-cards">
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={3}>
             <Card className="stat-card">
               <CardContent>
                 <Box className="stat-icon total">
@@ -331,7 +331,7 @@ const Expenses = () => {
             </Card>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={3}>
             <Card className="stat-card">
               <CardContent>
                 <Box className="stat-icon count">
@@ -344,7 +344,7 @@ const Expenses = () => {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={3}>
             <Card className="stat-card">
               <CardContent>
                 <Box className="stat-icon date">
@@ -362,34 +362,12 @@ const Expenses = () => {
 
       {/* Alerts */}
       {error && (
-        <Alert 
-          severity="error" 
-          onClose={() => setError('')} 
-          sx={{ 
-            mb: 2,
-            backgroundColor: '#fff',
-            color: '#e53e3e',
-            border: '2px solid #e53e3e',
-            borderRadius: '8px',
-            '& .MuiAlert-icon': { color: '#e53e3e' }
-          }}
-        >
+        <Alert severity="error" onClose={() => setError('')} sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
       {success && (
-        <Alert 
-          severity="success" 
-          onClose={() => setSuccess('')} 
-          sx={{ 
-            mb: 2,
-            backgroundColor: '#fff',
-            color: '#2e7d32',
-            border: '2px solid #2e7d32',
-            borderRadius: '8px',
-            '& .MuiAlert-icon': { color: '#2e7d32' }
-          }}
-        >
+        <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 2 }}>
           {success}
         </Alert>
       )}

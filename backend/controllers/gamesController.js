@@ -98,8 +98,8 @@ exports.updateGame = async (req, res) => {
 
     const updateData = {
       name,
-      price_per_hour: price_per_hour !== undefined && price_per_hour !== null ? parseFloat(price_per_hour) : undefined,
-      price_per_round: price_per_round !== undefined && price_per_round !== null ? parseFloat(price_per_round) : undefined,
+      price_per_hour: price_per_hour ? parseFloat(price_per_hour) : undefined,
+      price_per_round: price_per_round ? parseFloat(price_per_round) : undefined,
       is_active
     };
 

@@ -41,13 +41,13 @@ class Product {
     }
   }
 
-  // Create new product  ← added initial_price and quantity
+  // Create new product  ← added initial_price
   static async create(productData) {
     try {
-      const { name, price, initial_price, quantity, category, image } = productData;
+      const { name, price, initial_price, category, image } = productData;
       const [result] = await db.query(
-        'INSERT INTO products (name, price, initial_price, quantity, category, image, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)',
-        [name, price, initial_price || 0, quantity || 0, category || 'Uncategorized', image || null]
+        'INSERT INTO products (name, price, initial_price, category, image, is_active) VALUES (?, ?, ?, ?, ?, 1)',
+        [name, price, initial_price || 0, category || 'Uncategorized', image || null]
       );
       return result.insertId;
     } catch (error) {
@@ -55,10 +55,10 @@ class Product {
     }
   }
 
-  // Update product  ← added initial_price and quantity
+  // Update product  ← added initial_price
   static async update(id, productData) {
     try {
-      const { name, price, initial_price, quantity, category, image, is_active } = productData;
+      const { name, price, initial_price, category, image, is_active } = productData;
       
       const updates = [];
       const values = [];
@@ -74,10 +74,6 @@ class Product {
       if (initial_price !== undefined) {
         updates.push('initial_price = ?');
         values.push(initial_price);
-      }
-      if (quantity !== undefined) {
-        updates.push('quantity = ?');
-        values.push(quantity);
       }
       if (category !== undefined) {
         updates.push('category = ?');
@@ -200,33 +196,6 @@ class Product {
         'SELECT DISTINCT category FROM products WHERE category IS NOT NULL ORDER BY category ASC'
       );
       return categories.map(c => c.category);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Decrease product quantity
-  static async decreaseQuantity(id, quantityToDecrease) {
-    try {
-      const [result] = await db.query(
-        'UPDATE products SET quantity = quantity - ?, updated_at = NOW() WHERE id = ? AND quantity >= ?',
-        [quantityToDecrease, id, quantityToDecrease]
-      );
-      return result.affectedRows;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Check if product has sufficient quantity
-  static async checkQuantity(id, requiredQuantity) {
-    try {
-      const [product] = await db.query(
-        'SELECT quantity FROM products WHERE id = ?',
-        [id]
-      );
-      if (!product[0]) return false;
-      return product[0].quantity >= requiredQuantity;
     } catch (error) {
       throw error;
     }

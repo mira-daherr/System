@@ -1,7 +1,6 @@
 const Customer = require('../models/Customer');
 const Sale = require('../models/Sale');
 const SaleItem = require('../models/SaleItem');
-const Product = require('../models/Products');
 const db = require('../config/db'); 
 // ===================================
 // CREATE new purchase
@@ -70,21 +69,9 @@ exports.createPurchase = async (req, res) => {
       }
     }
 
-    // 4. Add product items and decrease quantity
+    // 4. Add product items
     if (selectedProducts && selectedProducts.length > 0) {
       for (const product of selectedProducts) {
-        // Check if product has sufficient quantity
-        const hasSufficientQuantity = await Product.checkQuantity(product.id, product.quantity);
-        if (!hasSufficientQuantity) {
-          throw new Error(`Insufficient quantity for product: ${product.name}`);
-        }
-        
-        // Decrease product quantity
-        const decreased = await Product.decreaseQuantity(product.id, product.quantity);
-        if (decreased === 0) {
-          throw new Error(`Failed to decrease quantity for product: ${product.name}`);
-        }
-        
         await SaleItem.create({
           sale_id: saleId,
           item_type: 'product',
@@ -413,6 +400,18 @@ exports.getCustomersWithHistory = async (req, res) => {
         c.total_debt,
         c.created_at,
         c.updated_at,
+        GROUP_CONCAT(
+          DISTINCT DATE_FORMAT(
+            CASE 
+              WHEN s.sale_date IS NULL OR s.sale_date = '0000-00-00 00:00:00' 
+              THEN s.created_at 
+              ELSE s.sale_date 
+            END, 
+            '%Y-%m-%d'
+          ) 
+          ORDER BY s.created_at DESC 
+          SEPARATOR ','
+        ) as purchase_dates,
         COUNT(DISTINCT s.id) as total_purchases,
         SUM(CASE WHEN s.total_amount > 0 THEN s.total_amount ELSE 0 END) as total_spent
       FROM customers c
@@ -422,35 +421,11 @@ exports.getCustomersWithHistory = async (req, res) => {
       ORDER BY c.total_debt DESC, c.name ASC
     `;
 
-    const [customers] = await db.query(query);
-    
-    // Get individual purchases for each customer
-    for (const customer of customers) {
-      const purchasesQuery = `
-        SELECT 
-          s.id,
-          DATE_FORMAT(COALESCE(NULLIF(s.sale_date, 0), s.created_at), '%Y-%m-%d') as purchase_date,
-          s.total_amount,
-          s.paid_amount,
-          s.remaining_amount,
-          GROUP_CONCAT(
-            CONCAT(si.item_name, ' (x', si.quantity, ')')
-            SEPARATOR ', '
-          ) as items
-        FROM sales s
-        LEFT JOIN sale_items si ON s.id = si.sale_id
-        WHERE s.customer_id = ? ${dateCondition.replace('s.created_at', 's.created_at')}
-        GROUP BY s.id, s.sale_date, s.created_at, s.total_amount, s.paid_amount, s.remaining_amount
-        ORDER BY s.created_at DESC
-      `;
-      
-      const [purchases] = await db.query(purchasesQuery, [customer.id]);
-      customer.purchases = purchases;
-    }
+    const [rows] = await db.query(query);
     
     res.json({ 
       success: true, 
-      data: customers 
+      data: rows 
     });
   } catch (error) {
     console.error('Error fetching customers with history:', error);

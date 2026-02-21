@@ -58,7 +58,6 @@ exports.getProductsByCategory = async (req, res) => {
       SELECT * FROM products 
       WHERE category = ? 
       AND is_active = 1
-      AND quantity > 0
       ORDER BY name
     `, [name]);
     
