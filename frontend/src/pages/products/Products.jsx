@@ -583,7 +583,7 @@ const Products = () => {
                     onClick={() => handleSort('price')}
                     className="sort-label"
                   >
-                    Price
+                    Sell Price/Unit
                   </TableSortLabel>
                 </TableCell>
                 <TableCell className="table-header-cell">
@@ -593,7 +593,7 @@ const Products = () => {
                     onClick={() => handleSort('initial_price')}
                     className="sort-label"
                   >
-                    Initial Price
+                    Cost/Unit
                   </TableSortLabel>
                 </TableCell>
                 <TableCell className="table-header-cell">
@@ -603,7 +603,7 @@ const Products = () => {
                     onClick={() => handleSort('quantity')}
                     className="sort-label"
                   >
-                    Quantity
+                    Stock Qty
                   </TableSortLabel>
                 </TableCell>
                 <TableCell className="table-header-cell actions-cell">
@@ -752,7 +752,7 @@ const Products = () => {
             <TextField
               margin="dense"
               name="price"
-              label="Sell Price (L.L)"
+              label="Sell Price per Unit (L.L)"
               type="number"
               fullWidth
               required
@@ -760,22 +760,24 @@ const Products = () => {
               onChange={handleInputChange}
               inputProps={{ step: '0.01', min: '0' }}
               className="form-field"
+              helperText="Price for 1 unit of this product"
             />
             <TextField
               margin="dense"
               name="initial_price"
-              label="Initial Price (L.L)"
+              label="Initial Cost per Unit (L.L)"
               type="number"
               fullWidth
               value={formData.initial_price}
               onChange={handleInputChange}
               inputProps={{ step: '0.01', min: '0' }}
               className="form-field"
+              helperText="Your cost for 1 unit (used to calculate profit)"
             />
             <TextField
               margin="dense"
               name="quantity"
-              label="Quantity"
+              label="Total Quantity in Stock"
               type="number"
               fullWidth
               required
@@ -783,6 +785,7 @@ const Products = () => {
               onChange={handleInputChange}
               inputProps={{ step: '1', min: '0' }}
               className="form-field"
+              helperText="Total number of units available"
             />
 
             {/* Upload Image Section */}

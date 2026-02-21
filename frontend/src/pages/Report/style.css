@@ -224,10 +224,17 @@
 
 .period-label {
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 13px !important;
-  color: var(--white-2) !important;
-  margin-bottom: 20px !important;
-  letter-spacing: 0.5px;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--white) !important;
+  margin-bottom: 24px !important;
+  letter-spacing: 1px;
+  padding: 10px 16px;
+  background: var(--black-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  border-radius: 8px;
+  display: inline-block;
 }
 
 /* ── Summary Cards ── */
@@ -240,22 +247,26 @@
   overflow: hidden !important;
   cursor: default;
   height: 100%;
+  min-height: 140px;
 }
 
 .summary-card::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 2px;
+  height: 3px;
   transition: opacity 0.3s;
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
-.summary-card.games::before    { background: var(--white); }
-.summary-card.products::before { background: var(--white); }
+.summary-card.games::before    { background: linear-gradient(90deg, #9c27b0, #e91e63); }
+.summary-card.products::before { background: linear-gradient(90deg, #ff9800, #ff5722); }
 .summary-card.expenses::before { background: var(--red); }
-.summary-card.profit.positive::before { background: var(--white); }
+.summary-card.profit.positive::before { background: linear-gradient(90deg, #4caf50, #8bc34a); }
 .summary-card.profit.negative::before { background: var(--red); }
+.summary-card.revenue::before { background: linear-gradient(90deg, #2196f3, #00bcd4); }
+.summary-card.costs::before { background: linear-gradient(90deg, #f44336, #ff5722); }
+.summary-card.total-gain::before { background: linear-gradient(90deg, #4caf50, #66bb6a); }
 
 .summary-card:hover { transform: translateY(-5px) !important; box-shadow: 0 16px 40px rgba(0,0,0,0.5) !important; }
 .summary-card:hover::before { opacity: 1; }
@@ -321,47 +332,49 @@
 
 /* ── Profit Banner ── */
 .profit-banner {
-  margin-top: 28px;
-  border-radius: 12px;
-  padding: 28px 32px;
+  margin-top: 24px;
+  border-radius: 14px;
+  padding: 32px 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
   flex-wrap: wrap;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 
 .profit-banner::before {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.04;
+  opacity: 0.03;
   background: repeating-linear-gradient(
     45deg,
     var(--white) 0px, var(--white) 1px,
-    transparent 1px, transparent 12px
+    transparent 1px, transparent 15px
   );
 }
 
-.banner-pos { background: var(--black-2); border-color: rgba(255,255,255,0.15); }
-.banner-neg { background: var(--black-2); border-color: var(--border-r); }
+.banner-pos { background: linear-gradient(135deg, var(--black-2) 0%, #0a1a0a 100%); border-color: rgba(76,175,80,0.3); }
+.banner-neg { background: linear-gradient(135deg, var(--black-2) 0%, #1a0505 100%); border-color: var(--border-r); }
 
 .profit-banner-label {
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 11px !important;
+  font-size: 12px !important;
   font-weight: 600 !important;
   letter-spacing: 3px !important;
   color: var(--white-2) !important;
-  margin-bottom: 4px !important;
+  margin-bottom: 8px !important;
 }
 
 .profit-banner-formula {
   font-family: 'JetBrains Mono', monospace !important;
-  font-size: 12px !important;
+  font-size: 13px !important;
   color: var(--white-2) !important;
+  line-height: 1.4;
 }
 
 .profit-banner-values {
@@ -411,7 +424,16 @@
   .filter-row { flex-direction: column; align-items: stretch; }
   .filter-input { min-width: 100%; }
   .fetch-btn { width: 100%; }
-  .profit-banner { flex-direction: column; gap: 8px; }
-  .profit-banner-values { align-items: flex-start; }
-  .profit-banner-value { font-size: 38px !important; }
+  .summary-card { min-height: 120px; }
+  .summary-card-inner { padding: 18px !important; }
+  .summary-value { font-size: 20px !important; }
+  .profit-banner { 
+    flex-direction: column; 
+    gap: 16px; 
+    padding: 24px 20px;
+    text-align: center;
+  }
+  .profit-banner-values { align-items: center; width: 100%; }
+  .profit-banner-value { font-size: 40px !important; }
+  .profit-banner-usd { font-size: 14px !important; }
 }
