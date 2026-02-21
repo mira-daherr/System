@@ -141,9 +141,18 @@ const Games = () => {
       let aValue = a[orderBy];
       let bValue = b[orderBy];
 
-      if (typeof aValue === 'string') {
+      // Handle null/undefined values
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      // Handle numeric fields (prices)
+      if (orderBy === 'price_per_hour' || orderBy === 'price_per_round') {
+        aValue = parseFloat(aValue) || 0;
+        bValue = parseFloat(bValue) || 0;
+      } else if (typeof aValue === 'string') {
+        // Handle string fields (name)
         aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
+        bValue = typeof bValue === 'string' ? bValue.toLowerCase() : '';
       }
 
       if (bValue < aValue) {
@@ -440,7 +449,10 @@ const Games = () => {
           )}
         </Box>
       ) : (
-        <TableContainer component={Paper} className="table-container">
+        <TableContainer 
+          component={Paper} 
+          className="table-container"
+        >
           <Table>
             <TableHead>
               <TableRow className="table-header-row">
@@ -580,7 +592,13 @@ const Games = () => {
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
-        PaperProps={{ className: 'dialog-paper' }}
+        PaperProps={{
+          sx: {
+            backgroundColor: '#1a1a1a',
+            color: '#fff',
+            backgroundImage: 'none'
+          }
+        }}
       >
         <DialogTitle className="dialog-title">
           {editMode ? 'Edit Game' : 'Add New Game'}
@@ -639,7 +657,13 @@ const Games = () => {
       <Dialog
         open={openDeleteDialog}
         onClose={handleDeleteCancel}
-        PaperProps={{ className: 'dialog-paper' }}
+        PaperProps={{
+          sx: {
+            backgroundColor: '#1a1a1a',
+            color: '#fff',
+            backgroundImage: 'none'
+          }
+        }}
       >
         <DialogTitle className="dialog-title">
           Confirm Soft Delete
@@ -663,7 +687,13 @@ const Games = () => {
       <Dialog
         open={openPermanentDeleteDialog}
         onClose={handlePermanentDeleteCancel}
-        PaperProps={{ className: 'dialog-paper' }}
+        PaperProps={{
+          sx: {
+            backgroundColor: '#1a1a1a',
+            color: '#fff',
+            backgroundImage: 'none'
+          }
+        }}
       >
         <DialogTitle className="dialog-title danger-title">
           ⚠️ Confirm Permanent Delete
@@ -690,7 +720,13 @@ const Games = () => {
       <Dialog
         open={openRestoreDialog}
         onClose={handleRestoreCancel}
-        PaperProps={{ className: 'dialog-paper' }}
+        PaperProps={{
+          sx: {
+            backgroundColor: '#1a1a1a',
+            color: '#fff',
+            backgroundImage: 'none'
+          }
+        }}
       >
         <DialogTitle className="dialog-title">
           Confirm Restore
