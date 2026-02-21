@@ -353,7 +353,7 @@ const CustomerPurchase = () => {
         >
           ←
         </button>
-        <h1>Customer Purchase</h1>
+        <h1>Customer Purchases</h1>
       </div>
 
       <div className="container">
