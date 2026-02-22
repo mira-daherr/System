@@ -13,7 +13,14 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const gameRoutes = require('./routes/gameRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const customerPurchaseRoutes = require('./routes/customerPurchaseRoutes');
-const reportRoutes = require('./routes/reportRoutes'); // ← added
+const reportRoutes = require('./routes/reportRoutes');
+
+// ============ Base Path (pkg-aware) ============
+// When compiled with pkg, __dirname points inside the snapshot.
+// Use process.execPath dirname so dist/ and public/ are found next to the .exe
+const basePath = process.pkg
+  ? path.dirname(process.execPath)
+  : __dirname;
 
 // ============ Middleware ============
 app.use(cors());
@@ -21,7 +28,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ============ Static Files ============
-app.use('/products', express.static(path.join(__dirname, 'public', 'products')));
+// Serve uploaded product images (live on the real filesystem, always writable)
+app.use('/products', express.static(path.join(basePath, 'public', 'products')));
+
+// Serve React frontend build (dist/ folder next to the .exe)
+app.use(express.static(path.join(basePath, 'dist')));
 
 // ============ API Routes ============
 app.use('/auth', authRoutes);
@@ -30,74 +41,20 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/customer-purchases', customerPurchaseRoutes);
-app.use('/api/reports', reportRoutes); // ← added
+app.use('/api/reports', reportRoutes);
 
-// Root route for testing (GET /)
-app.get('/', (req, res) => {
-  res.json({
-    message: 'API is running successfully!',
-    endpoints: {
-      auth: {
-        login: 'POST /auth/login',
-        logout: 'POST /auth/logout',
-        requestResetCode: 'POST /auth/request-reset-code',
-        resetPassword: 'POST /auth/reset-password'
-      },
-      products: {
-        getAll: 'GET /api/products',
-        getById: 'GET /api/products/:id',
-        getByCategory: 'GET /api/products/category/:category',
-        search: 'GET /api/products/search?search=term',
-        priceRange: 'GET /api/products/price-range?min=20&max=50',
-        create: 'POST /api/products',
-        update: 'PUT /api/products/:id',
-        softDelete: 'DELETE /api/products/:id',
-        restore: 'PUT /api/products/:id/restore',
-        permanentDelete: 'DELETE /api/products/permanent/:id'
-      },
-      categories: {
-        getAll: 'GET /api/categories',
-        getById: 'GET /api/categories/:id',
-        create: 'POST /api/categories',
-        update: 'PUT /api/categories/:id',
-        delete: 'DELETE /api/categories/:id'
-      },
-      games: {
-        getAll: 'GET /api/games',
-        getById: 'GET /api/games/:id',
-        search: 'GET /api/games/search?search=term',
-        create: 'POST /api/games',
-        update: 'PUT /api/games/:id',
-        softDelete: 'DELETE /api/games/:id',
-        restore: 'PUT /api/games/:id/restore',
-        permanentDelete: 'DELETE /api/games/permanent/:id'
-      },
-      expenses: {
-        getAll: 'GET /api/expenses',
-        getById: 'GET /api/expenses/:id',
-        recent: 'GET /api/expenses/recent?limit=10',
-        dateRange: 'GET /api/expenses/date-range?startDate=2024-01-01&endDate=2024-12-31',
-        analytics: 'GET /api/expenses/analytics?startDate=2024-01-01&endDate=2024-12-31&groupBy=day',
-        create: 'POST /api/expenses',
-        update: 'PUT /api/expenses/:id',
-        delete: 'DELETE /api/expenses/:id'
-      },
-      customerPurchases: {
-        createPurchase: 'POST /api/customer-purchases/purchase',
-        getAllPurchases: 'GET /api/customer-purchases/purchases',
-        getPurchaseById: 'GET /api/customer-purchases/purchase/:id',
-        deletePurchase: 'DELETE /api/customer-purchases/purchase/:id',
-        getAllCustomers: 'GET /api/customer-purchases/customers',
-        getCustomerById: 'GET /api/customer-purchases/customer/:id'
-      },
-      reports: { // ← added
-        daily:   'GET /api/reports/daily?date=2026-02-17',
-        weekly:  'GET /api/reports/weekly?start=2026-02-10&end=2026-02-17',
-        monthly: 'GET /api/reports/monthly?month=2&year=2026'
-      },
-      note: '⚠️ All API routes require authentication (JWT token)'
-    }
-  });
+// ============ SPA Fallback ============
+// Return index.html for any non-API GET so React Router handles the navigation
+app.use((req, res, next) => {
+  if (
+    req.method === 'GET' &&
+    !req.path.startsWith('/api') &&
+    !req.path.startsWith('/auth') &&
+    !req.path.startsWith('/products')
+  ) {
+    return res.sendFile(path.join(basePath, 'dist', 'index.html'));
+  }
+  next();
 });
 
 // ============ Error Handling ============
@@ -119,14 +76,5 @@ app.use((err, req, res, next) => {
 // ============ Start Server ============
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`✅ Server is running on http://localhost:${PORT}`);
-  console.log(`📍 API endpoints:`);
-  console.log(`   - Auth: http://localhost:${PORT}/auth/login`);
-  console.log(`   - Products: http://localhost:${PORT}/api/products`);
-  console.log(`   - Categories: http://localhost:${PORT}/api/categories`);
-  console.log(`   - Games: http://localhost:${PORT}/api/games`);
-  console.log(`   - Expenses: http://localhost:${PORT}/api/expenses`);
-  console.log(`   - Customer Purchases: http://localhost:${PORT}/api/customer-purchases`);
-  console.log(`   - Reports: http://localhost:${PORT}/api/reports`); // ← added
-  console.log(`🔐 All API routes require JWT token`);
+  console.log(`Server running - open http://localhost:${PORT} in your browser`);
 });
