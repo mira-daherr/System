@@ -39,7 +39,13 @@ const Customers = () => {
         startDate,
         endDate
       );
-      setCustomers(response.data || []);
+      // Sort by most recent first (by updated_at or created_at)
+      const sortedCustomers = (response.data || []).sort((a, b) => {
+        const dateA = new Date(a.updated_at || a.created_at);
+        const dateB = new Date(b.updated_at || b.created_at);
+        return dateB - dateA; // Most recent first
+      });
+      setCustomers(sortedCustomers);
     } catch (error) {
       console.error('Error fetching customers:', error);
       setSnackbar({
@@ -137,29 +143,10 @@ const Customers = () => {
   // ===================================
   // FORMAT PURCHASE DATES
   // ===================================
-  const formatPurchaseDates = (datesString) => {
-    if (!datesString) return 'No purchases yet';
-    
-    const dates = datesString.split(',').filter(d => d && d.trim());
-    if (dates.length === 0) return 'No purchases yet';
-    
-    const displayCount = 2;
-    const displayDates = dates.slice(0, displayCount)
-      .map(date => {
-        const d = new Date(date.trim());
-        // Check if date is valid
-        if (isNaN(d.getTime())) return null;
-        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      })
-      .filter(d => d !== null); // Remove invalid dates
-    
-    if (displayDates.length === 0) return 'No purchases yet';
-    
-    if (dates.length > displayCount) {
-      return displayDates.join(', ') + ` (+${dates.length - displayCount})`;
-    }
-    
-    return displayDates.join(', ');
+  const formatDate = (dateString) => {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return 'Invalid Date';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   // ===================================
@@ -211,7 +198,6 @@ const Customers = () => {
           </button>
         </div>
         
-        {/* Date Range Filter */}
         <Box className="date-filter">
          <TextField
             type="date"
@@ -256,11 +242,11 @@ const Customers = () => {
         </Box>
         
         <div className="stats">
-          <span>{customers.length} customers</span>
+          <span>📋 {customers.length} Customers</span>
           <span>•</span>
-          <span>{customers.filter(c => parseFloat(c.total_debt) > 0).length} with debt</span>
+          <span>💳 {customers.filter(c => parseFloat(c.total_debt) > 0).length} With Debt</span>
           <span>•</span>
-          <span>L.L {customers.reduce((sum, c) => sum + (parseFloat(c.total_debt) || 0), 0).toFixed(3)}</span>
+          <span>💰 Total: L.L {(customers.reduce((sum, c) => sum + (parseFloat(c.total_debt) || 0), 0) * 1000).toLocaleString()}</span>
         </div>
       </div>
 
@@ -279,6 +265,7 @@ const Customers = () => {
               const hasDebt = debt > 0;
               const totalPurchases = parseInt(customer.total_purchases) || 0;
               const totalSpent = parseFloat(customer.total_spent) || 0;
+              const purchases = customer.purchases || [];
 
               return (
                 <div 
@@ -288,40 +275,69 @@ const Customers = () => {
                   <div className="customer-name">{customer.name}</div>
                   
                   <div className="customer-info">
-                    <div>📊 {totalPurchases} purchases</div>
-                    <div>📅 {formatPurchaseDates(customer.purchase_dates)}</div>
+                    <div className="purchases-by-date">
+                      {purchases.length > 0 ? (
+                        purchases.map((purchase, idx) => (
+                          <div key={purchase.id} className="purchase-item">
+                            <span className="purchase-date">{formatDate(purchase.purchase_date)}</span>
+                            <span className="purchase-items">{purchase.items || 'No items'}</span>
+                            <span className="purchase-amount">L.L {(purchase.total_amount * 1000).toLocaleString()}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="no-purchases">No purchases in this period</div>
+                      )}
+                    </div>
+                    <div className="totals-summary">
+                      <span className="total-label">Total:</span>
+                      <span className="total-purchases">{totalPurchases} purchases</span>
+                      <span className="total-spent">L.L {(totalSpent * 1000).toLocaleString()}</span>
+                    </div>
                   </div>
 
-                  <div className={`customer-debt ${hasDebt ? 'has-debt' : ''}`}>
-                    {hasDebt ? `💳 L.L ${debt.toFixed(3)}` : `✅ Paid L.L ${totalSpent.toFixed(3)}`}
+                  <div className={`customer-debt ${hasDebt ? 'has-debt' : 'no-debt'}`}>
+                    {hasDebt ? (
+                      <>
+                        <div className="debt-label">Outstanding Debt</div>
+                        <div className="debt-amount">L.L {(debt * 1000).toLocaleString()}</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="debt-label">Fully Paid</div>
+                        <div className="debt-amount">✅ No Debt</div>
+                      </>
+                    )}
                   </div>
 
                   {hasDebt && (
                     <div className="payment-section">
-                      <input
-                        type="number"
-                        placeholder="Payment amount"
-                        step="0.001"
-                        min="0"
-                        max={debt}
-                        value={paymentAmounts[customer.id] || ''}
-                        onChange={(e) => handlePaymentChange(customer.id, e.target.value)}
-                        disabled={processingPayment[customer.id]}
-                      />
+                      <div className="payment-input-wrapper">
+                        <label>Payment Amount (L.L)</label>
+                        <input
+                          type="number"
+                          placeholder="amount"
+                          step="0.001"
+                          min="0"
+                          max={debt}
+                          value={paymentAmounts[customer.id] || ''}
+                          onChange={(e) => handlePaymentChange(customer.id, e.target.value)}
+                          disabled={processingPayment[customer.id]}
+                        />
+                      </div>
                       <div className="payment-buttons">
                         <button
                           className="btn-full"
                           onClick={() => handlePaymentChange(customer.id, debt.toFixed(3))}
                           disabled={processingPayment[customer.id]}
                         >
-                          Full
+                          Pay Full Amount
                         </button>
                         <button
                           className="btn-save"
                           onClick={() => handleProcessPayment(customer)}
                           disabled={processingPayment[customer.id] || !paymentAmounts[customer.id]}
                         >
-                          {processingPayment[customer.id] ? '⏳ Processing...' : '💾 Save'}
+                          {processingPayment[customer.id] ? 'Processing...' : 'Process Payment'}
                         </button>
                       </div>
                     </div>

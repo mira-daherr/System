@@ -160,14 +160,14 @@ const CustomerPurchase = () => {
       ? parseFloat(game.price_per_hour || 0) 
       : parseFloat(game.price_per_round || 0);
     
-    // Create unique identifier with game id and price type
+    // Create unique identifier with game id and price type (for UI tracking)
     const uniqueId = `${game.id}_${priceType}`;
-    const existing = selectedGames.find(g => g.id === uniqueId);
+    const existing = selectedGames.find(g => g.uniqueId === uniqueId);
     
     if (existing) {
       // Increase quantity
       setSelectedGames(selectedGames.map(g => 
-        g.id === uniqueId 
+        g.uniqueId === uniqueId 
           ? { ...g, quantity: g.quantity + 1, total: (g.quantity + 1) * g.price }
           : g
       ));
@@ -175,7 +175,8 @@ const CustomerPurchase = () => {
       // Add new
       const priceLabel = priceType === 'hour' ? 'per hour' : 'per round';
       setSelectedGames([...selectedGames, {
-        id: uniqueId,
+        uniqueId: uniqueId,        // For UI tracking
+        id: game.id,               // Actual game ID for database
         name: `${game.name} (${priceLabel})`,
         quantity: 1,
         price: price,
@@ -216,7 +217,7 @@ const CustomerPurchase = () => {
   const updateQuantity = (type, id, change) => {
     if (type === 'game') {
       setSelectedGames(selectedGames.map(g => {
-        if (g.id === id) {
+        if (g.uniqueId === id) {
           const newQty = Math.max(1, g.quantity + change);
           return { ...g, quantity: newQty, total: newQty * g.price };
         }
@@ -238,7 +239,7 @@ const CustomerPurchase = () => {
   // ===================================
   const removeItem = (type, id) => {
     if (type === 'game') {
-      setSelectedGames(selectedGames.filter(g => g.id !== id));
+      setSelectedGames(selectedGames.filter(g => g.uniqueId !== id));
     } else {
       setSelectedProducts(selectedProducts.filter(p => p.id !== id));
     }
@@ -352,7 +353,7 @@ const CustomerPurchase = () => {
         >
           ←
         </button>
-        <h1>Customer Purchase</h1>
+        <h1>Customer Purchases</h1>
       </div>
 
       <div className="container">
@@ -471,7 +472,7 @@ const CustomerPurchase = () => {
                     <div className="cart-items">
                       <h4 className="cart-category">Games:</h4>
                       {selectedGames.map(game => (
-                        <div key={game.id} className="cart-item">
+                        <div key={game.uniqueId} className="cart-item">
                           <div className="cart-item-info">
                             <span className="cart-item-name">{game.name}</span>
                             <span className="cart-item-qty">×{game.quantity}</span>
@@ -484,7 +485,7 @@ const CustomerPurchase = () => {
                                 className="qty-btn"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  updateQuantity('game', game.id, -1);
+                                  updateQuantity('game', game.uniqueId, -1);
                                 }}
                               >
                                 -
@@ -494,7 +495,7 @@ const CustomerPurchase = () => {
                                 className="qty-btn"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  updateQuantity('game', game.id, 1);
+                                  updateQuantity('game', game.uniqueId, 1);
                                 }}
                               >
                                 +
@@ -504,7 +505,7 @@ const CustomerPurchase = () => {
                                 className="remove-btn"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  removeItem('game', game.id);
+                                  removeItem('game', game.uniqueId);
                                 }}
                               >
                                 ×
